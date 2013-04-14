@@ -317,7 +317,7 @@ public:
 	float getMaxLagEstimate() { return m_max_lag_estimate; }
 	
 	std::set<v3s16>* getForceloadedBlocks() { return &m_active_blocks.m_forceloaded_list; };
-	
+
 private:
 
 	/*

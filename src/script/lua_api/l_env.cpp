@@ -764,6 +764,29 @@ int ModApiEnvMod::l_spawn_tree(lua_State *L)
 	treegen::spawn_ltree (env, p0, ndef, tree_def);
 	return 1;
 }
+// get_surface(basepos, yoffset, walkable_only=false)
+int ModApiEnvMod::l_get_surface(lua_State *L)
+{
+	GET_ENV_PTR;
+
+	v3s16 basepos = read_v3s16(L, 1);
+	int max_y     = luaL_checkint(L, 2);
+	bool walkable_only = false;
+
+	if (!lua_isnil(L,3)) {
+		walkable_only = lua_toboolean(L, -1);
+	}
+
+	int result =  env->getMap().getSurface(basepos, max_y, walkable_only);
+
+	if (result >= basepos.Y) {
+		lua_pushnumber(L, result);
+		return 1;
+	}
+
+	lua_pushnil(L);
+	return 1;
+}
 
 // transforming_liquid_add(pos)
 int ModApiEnvMod::l_transforming_liquid_add(lua_State *L)
@@ -842,4 +865,5 @@ void ModApiEnvMod::Initialize(lua_State *L, int top)
 	API_FCT(forceload_block);
 	API_FCT(forceload_free_block);
 	API_FCT(get_us_time);
+	API_FCT(get_surface);
 }

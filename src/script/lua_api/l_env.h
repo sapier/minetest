@@ -159,6 +159,9 @@ private:
 	// get us precision time
 	static int l_get_us_time(lua_State *L);
 
+	// minetest.get_surface(basepos,yoffset,walkable_only=false)
+	static int l_get_surface(lua_State *L);
+
 public:
 	static void Initialize(lua_State *L, int top);
 };

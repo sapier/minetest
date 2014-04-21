@@ -33,6 +33,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "httpfetch.h"
 #include "constants.h"
 #include "util/numeric.h"
+#ifdef __ANDROID__
+#include "tile.h"
+#include <GLES/gl.h>
+#endif
 
 #include <IGUIStaticText.h>
 #include <ICameraSceneNode.h>
@@ -88,6 +92,16 @@ video::ITexture* MenuTextureSource::getTexture(const std::string &name, u32 *id)
 	if(name.empty())
 		return NULL;
 	m_to_delete.insert(name);
+
+#ifdef __ANDROID__
+	video::IImage *image = m_driver->createImageFromFile(name.c_str());
+	if (image) {
+		image = Align2Npot2(image, m_driver);
+		video::ITexture* retval = m_driver->addTexture(name.c_str(), image);
+		image->drop();
+		return retval;
+	}
+#endif
 	return m_driver->getTexture(name.c_str());
 }
 
@@ -270,6 +284,10 @@ void GUIEngine::run()
 			sleep_ms(25);
 
 		m_script->step();
+
+#ifdef __ANDROID__
+		m_menu->getAndroidUIInput();
+#endif
 	}
 }
 
@@ -298,7 +316,7 @@ GUIEngine::~GUIEngine()
 	}
 
 	delete m_texture_source;
-	
+
 	if (m_cloud.clouds)
 		m_cloud.clouds->drop();
 }

@@ -170,6 +170,7 @@ int getNumberOfProcessors() {
 }
 
 
+#ifndef _IRR_ANDROID_PLATFORM_
 bool threadBindToProcessor(threadid_t tid, int pnumber) {
 #if defined(_WIN32)
 
@@ -222,7 +223,7 @@ bool threadBindToProcessor(threadid_t tid, int pnumber) {
 
 #endif
 }
-
+#endif
 
 bool threadSetPriority(threadid_t tid, int prio) {
 #if defined(_WIN32)
@@ -475,6 +476,9 @@ void initializePaths()
 	trylist.push_back(
 			bindir + DIR_DELIM + ".." + DIR_DELIM + "share" + DIR_DELIM + PROJECT_NAME);
 	trylist.push_back(bindir + DIR_DELIM + "..");
+#ifdef __ANDROID__
+	trylist.push_back(DIR_DELIM "sdcard" DIR_DELIM PROJECT_NAME);
+#endif
 
 	for(std::list<std::string>::const_iterator i = trylist.begin();
 			i != trylist.end(); i++)
@@ -493,8 +497,11 @@ void initializePaths()
 		path_share = trypath;
 		break;
 	}
-
+#ifndef __ANDROID__
 	path_user = std::string(getenv("HOME")) + DIR_DELIM + "." + PROJECT_NAME;
+#else
+	path_user = std::string(DIR_DELIM "sdcard" DIR_DELIM PROJECT_NAME DIR_DELIM);
+#endif
 
 	/*
 		OS X
@@ -542,6 +549,7 @@ v2u32 getWindowSize() {
 	return device->getVideoDriver()->getScreenSize();
 }
 
+#ifndef __ANDROID__
 
 float getDisplayDensity() {
 	float gui_scaling = g_settings->getFloat("gui_scaling");
@@ -564,6 +572,7 @@ v2u32 getDisplaySize() {
 
 	return deskres;
 }
+#endif
 #endif
 
 } //namespace porting

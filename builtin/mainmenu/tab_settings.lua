@@ -75,7 +75,30 @@ local function showconfirm_reset(tabview)
 	new_dlg:show()
 end
 
+local function gui_scale_index()
 
+	local current_value = tonumber(core.setting_get("gui_scaling"))
+
+	if (current_value == nil) then
+		return 0
+	elseif current_value <= 0.5 then
+		return 1
+	elseif current_value <= 0.625 then
+		return 2
+	elseif current_value <= 0.75 then
+		return 3
+	elseif current_value <= 0.875 then
+		return 4
+	elseif current_value <= 1.0 then
+		return 5
+	elseif current_value <= 1.25 then
+		return 6
+	elseif current_value <= 1.5 then
+		return 7
+	else
+		return 8
+	end
+end
 
 local function formspec(tabview, name, tabdata)
 	local tab_string =
@@ -106,16 +129,25 @@ local function formspec(tabview, name, tabdata)
 				.. dump(core.setting_getbool("trilinear_filter")) .. "]"..
 		"box[7.75,0;4,4;#999999]" ..
 		"checkbox[8,0;cb_shaders;".. fgettext("Shaders") .. ";"
-				.. dump(core.setting_getbool("enable_shaders")) .. "]"..
-		"button[1,4.5;2.25,0.5;btn_change_keys;".. fgettext("Change keys") .. "]"
-	
-	local android = false
-	if android then
+				.. dump(core.setting_getbool("enable_shaders")) .. "]"
+	if not ANDROID then
 		tab_string = tab_string ..
-		"box[4.25,2.75;3.25,2.5;#999999]" ..
+		"button[8,4.75;3.75,0.5;btn_change_keys;".. fgettext("Change keys") .. "]"
+	else
+		tab_string = tab_string ..
+		"button[8,4.75;3.75,0.5;btn_reset_singleplayer;".. fgettext("Reset singleplayer world") .. "]"
+	end
+	tab_string = tab_string ..
+		"box[0.75,4.25;3.25,1.25;#999999]" ..
+		"label[1,4.25;" .. fgettext("GUI scale factor") .. "]" ..
+		"dropdown[1,4.75;3.0;dd_gui_scaling;0.5,0.625,0.75,0.875,1.0,1.25,1.5,2.0;"
+			.. gui_scale_index() .. "]"
+
+	if ANDROID then
+		tab_string = tab_string ..
+		"box[4.25,2.75;3.25,2.15;#999999]" ..
 		"checkbox[4.5,2.75;cb_touchscreen_target;".. fgettext("Touch free target") .. ";"
-				.. dump(core.setting_getbool("touchtarget")) .. "]" ..
-		"button[8,4.5;3.75,0.5;btn_reset_singleplayer;".. fgettext("Reset singleplayer world") .. "]"
+				.. dump(core.setting_getbool("touchtarget")) .. "]"
 	end
 
 	if core.setting_get("touchscreen_threshold") ~= nil then
@@ -237,6 +269,10 @@ local function handle_settings_buttons(this, fields, tabname, tabdata)
 	end
 	if fields["dd_touchthreshold"] then
 		core.setting_set("touchscreen_threshold",fields["dd_touchthreshold"])
+		return true
+	end
+	if fields["dd_gui_scaling"] then
+		core.setting_set("gui_scaling",fields["dd_gui_scaling"])
 		return true
 	end
 	if fields["btn_reset_singleplayer"] then

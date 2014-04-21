@@ -152,6 +152,7 @@ void set_default_settings(Settings *settings)
 
 	settings->setDefault("curl_timeout", "5000");
 	settings->setDefault("curl_parallel_limit", "8");
+	settings->setDefault("curl_verify_cert","true");
 
 	settings->setDefault("enable_remote_media_server", "true");
 
@@ -276,6 +277,39 @@ void set_default_settings(Settings *settings)
 	settings->setDefault("high_precision_fpu", "true");
 
 	settings->setDefault("language", "");
+
+#ifdef __ANDROID__
+	settings->setDefault("screenW", "0");
+	settings->setDefault("screenH", "0");
+	settings->setDefault("enable_shaders", "false");
+	settings->setDefault("fullscreen", "true");
+	settings->setDefault("enable_particles", "false");
+	settings->setDefault("video_driver", "ogles1");
+	settings->setDefault("touchtarget", "true");
+	settings->setDefault("main_menu_script","/sdcard/Minetest/builtin/mainmenu/init_android.lua");
+	settings->setDefault("TMPFolder","/sdcard/Minetest/tmp/");
+	settings->setDefault("touchscreen_threshold","20");
+	settings->setDefault("smooth_lighting", "false");
+	settings->setDefault("max_simultaneous_block_sends_per_client", "3");
+	settings->setDefault("emergequeue_limit_diskonly", "8");
+	settings->setDefault("emergequeue_limit_generate", "8");
+	settings->setDefault("preload_item_visuals", "false");
+
+	settings->setDefault("viewing_range_nodes_max", "50");
+	settings->setDefault("viewing_range_nodes_min", "20");
+	settings->setDefault("inventory_image_hack", "false");
+
+	//check for device with small screen
+	float x_inches = ((double) porting::getDisplaySize().X /
+			(160 * porting::getDisplayDensity()));
+	if (x_inches  < 3.5) {
+		settings->setDefault("gui_scaling", "0.6");
+	}
+	else if (x_inches < 4.5) {
+		settings->setDefault("gui_scaling", "0.7");
+	}
+	settings->setDefault("curl_verify_cert","false");
+#endif
 }
 
 void late_init_default_settings(Settings* settings)

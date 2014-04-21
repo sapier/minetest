@@ -21,6 +21,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define MODALMENU_HEADER
 
 #include "irrlichttypes_extrabloated.h"
+#ifdef HAVE_TOUCHSCREENGUI
+#include "touchscreengui.h"
+
+extern TouchScreenGUI *touchscreengui;
+#endif
 
 class GUIModalMenu;
 
@@ -101,6 +106,10 @@ public:
 		Environment->removeFocus(this);
 		m_menumgr->deletingMenu(this);
 		this->remove();
+#ifdef HAVE_TOUCHSCREENGUI
+		if (touchscreengui)
+			touchscreengui->Show();
+#endif
 	}
 
 	void removeChildren()

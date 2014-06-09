@@ -88,10 +88,8 @@ void VoxelManipulator::print(std::ostream &o, INodeDefManager *ndef,
 			{
 				u8 f = m_flags[m_area.index(x,y,z)];
 				char c;
-				if(f & VOXELFLAG_NOT_LOADED)
+				if(f & VOXELFLAG_NO_DATA)
 					c = 'N';
-				else if(f & VOXELFLAG_INEXISTENT)
-					c = 'I';
 				else
 				{
 					c = 'X';
@@ -186,22 +184,20 @@ void VoxelManipulator::addArea(VoxelArea area)
 	assert(new_data);
 	u8 *new_flags = new u8[new_size];
 	assert(new_flags);
-	memset(new_flags, VOXELFLAG_NOT_LOADED, new_size);
+	memset(new_flags, VOXELFLAG_NO_DATA, new_size);
 	
 	// Copy old data
-	
+	s32 old_x_width = m_area.MaxEdge.X - m_area.MinEdge.X + 1;
 	for(s32 z=m_area.MinEdge.Z; z<=m_area.MaxEdge.Z; z++)
 	for(s32 y=m_area.MinEdge.Y; y<=m_area.MaxEdge.Y; y++)
-	for(s32 x=m_area.MinEdge.X; x<=m_area.MaxEdge.X; x++)
 	{
-		unsigned int old_index = m_area.index(x,y,z);
-		// If loaded, copy data and flags
-		if((m_flags[old_index] & VOXELFLAG_NOT_LOADED) == false)
-		{
-			unsigned int new_index = new_area.index(x,y,z);
-			new_data[new_index]  = m_data[old_index];
-			new_flags[new_index] = m_flags[old_index];
-		}
+		unsigned int old_index = m_area.index(m_area.MinEdge.X,y,z);
+		unsigned int new_index = new_area.index(m_area.MinEdge.X,y,z);
+
+		memcpy(&new_data[new_index], &m_data[old_index],
+				old_x_width * sizeof(MapNode));
+		memcpy(&new_flags[new_index], &m_flags[old_index],
+				old_x_width * sizeof(u8));
 	}
 
 	// Replace area, data and flags
@@ -225,7 +221,7 @@ void VoxelManipulator::addArea(VoxelArea area)
 	//dstream<<"addArea done"<<std::endl;
 }
 
-void VoxelManipulator::copyFrom(MapNode *src, VoxelArea src_area,
+void VoxelManipulator::copyFrom(MapNode *src, const VoxelArea& src_area,
 		v3s16 from_pos, v3s16 to_pos, v3s16 size)
 {
 	for(s16 z=0; z<size.Z; z++)
@@ -238,7 +234,7 @@ void VoxelManipulator::copyFrom(MapNode *src, VoxelArea src_area,
 	}
 }
 
-void VoxelManipulator::copyTo(MapNode *dst, VoxelArea dst_area,
+void VoxelManipulator::copyTo(MapNode *dst, const VoxelArea& dst_area,
 		v3s16 dst_pos, v3s16 from_pos, v3s16 size)
 {
 	for(s16 z=0; z<size.Z; z++)
@@ -246,13 +242,7 @@ void VoxelManipulator::copyTo(MapNode *dst, VoxelArea dst_area,
 	{
 		s32 i_dst = dst_area.index(dst_pos.X, dst_pos.Y+y, dst_pos.Z+z);
 		s32 i_local = m_area.index(from_pos.X, from_pos.Y+y, from_pos.Z+z);
-		for (s16 x = 0; x < size.X; x++) {
-			if (m_data[i_local].getContent() != CONTENT_IGNORE)
-				dst[i_dst] = m_data[i_local];
-			i_dst++;
-			i_local++;
-		}
-		//memcpy(&dst[i_dst], &m_data[i_local], size.X*sizeof(MapNode));
+		memcpy(&dst[i_dst], &m_data[i_local], size.X*sizeof(MapNode));
 	}
 }
 
@@ -315,7 +305,7 @@ void VoxelManipulator::unspreadLight(enum LightBank bank, v3s16 p, u8 oldlight,
 		v3s16(-1,0,0), // left
 	};
 	
-	emerge(VoxelArea(p - v3s16(1,1,1), p + v3s16(1,1,1)));
+	addArea(VoxelArea(p - v3s16(1,1,1), p + v3s16(1,1,1)));
 
 	// Loop through 6 neighbors
 	for(u16 i=0; i<6; i++)
@@ -325,7 +315,7 @@ void VoxelManipulator::unspreadLight(enum LightBank bank, v3s16 p, u8 oldlight,
 		
 		u32 n2i = m_area.index(n2pos);
 
-		if(m_flags[n2i] & VOXELFLAG_INEXISTENT)
+		if(m_flags[n2i] & VOXELFLAG_NO_DATA)
 			continue;
 
 		MapNode &n2 = m_data[n2i];
@@ -442,7 +432,7 @@ void VoxelManipulator::unspreadLight(enum LightBank bank,
 	{
 		v3s16 pos = j.getNode()->getKey();
 		
-		emerge(VoxelArea(pos - v3s16(1,1,1), pos + v3s16(1,1,1)));
+		addArea(VoxelArea(pos - v3s16(1,1,1), pos + v3s16(1,1,1)));
 
 		//MapNode &n = m_data[m_area.index(pos)];
 		
@@ -456,7 +446,7 @@ void VoxelManipulator::unspreadLight(enum LightBank bank,
 			
 			u32 n2i = m_area.index(n2pos);
 
-			if(m_flags[n2i] & VOXELFLAG_INEXISTENT)
+			if(m_flags[n2i] & VOXELFLAG_NO_DATA)
 				continue;
 
 			MapNode &n2 = m_data[n2i];
@@ -520,11 +510,11 @@ void VoxelManipulator::spreadLight(enum LightBank bank, v3s16 p,
 		v3s16(-1,0,0), // left
 	};
 
-	emerge(VoxelArea(p - v3s16(1,1,1), p + v3s16(1,1,1)));
+	addArea(VoxelArea(p - v3s16(1,1,1), p + v3s16(1,1,1)));
 
 	u32 i = m_area.index(p);
 	
-	if(m_flags[i] & VOXELFLAG_INEXISTENT)
+	if(m_flags[i] & VOXELFLAG_NO_DATA)
 		return;
 
 	MapNode &n = m_data[i];
@@ -540,7 +530,7 @@ void VoxelManipulator::spreadLight(enum LightBank bank, v3s16 p,
 		
 		u32 n2i = m_area.index(n2pos);
 
-		if(m_flags[n2i] & VOXELFLAG_INEXISTENT)
+		if(m_flags[n2i] & VOXELFLAG_NO_DATA)
 			continue;
 
 		MapNode &n2 = m_data[n2i];
@@ -624,11 +614,11 @@ void VoxelManipulator::spreadLight(enum LightBank bank,
 	{
 		v3s16 pos = *j;
 
-		emerge(VoxelArea(pos - v3s16(1,1,1), pos + v3s16(1,1,1)));
+		addArea(VoxelArea(pos - v3s16(1,1,1), pos + v3s16(1,1,1)));
 
 		u32 i = m_area.index(pos);
 		
-		if(m_flags[i] & VOXELFLAG_INEXISTENT)
+		if(m_flags[i] & VOXELFLAG_NO_DATA)
 			continue;
 
 		MapNode &n = m_data[i];
@@ -646,7 +636,7 @@ void VoxelManipulator::spreadLight(enum LightBank bank,
 			{
 				u32 n2i = m_area.index(n2pos);
 
-				if(m_flags[n2i] & VOXELFLAG_INEXISTENT)
+				if(m_flags[n2i] & VOXELFLAG_NO_DATA)
 					continue;
 
 				MapNode &n2 = m_data[n2i];

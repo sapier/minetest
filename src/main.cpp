@@ -829,7 +829,7 @@ int main(int argc, char *argv[])
 	/*
 		Low-level initialization
 	*/
-	
+
 	// Quiet mode, print errors only
 	if (cmd_args.getFlag("quiet")) {
 		log_remove_output(&main_stderr_log_out);
@@ -1027,7 +1027,7 @@ int main(int argc, char *argv[])
 				commanded_world.substr(commanded_world.size() - worldmt.size())
 				== worldmt) {
 			dstream << _("Supplied world.mt file - stripping it off.") << std::endl;
-			commanded_world = commanded_world.substr(0, 
+			commanded_world = commanded_world.substr(0,
 				commanded_world.size() - worldmt.size());
 		}
 	}
@@ -1208,7 +1208,7 @@ int main(int argc, char *argv[])
 		if (cmd_args.exists("migrate")) {
 			std::string migrate_to = cmd_args.get("migrate");
 			Settings world_mt;
-			bool success = world_mt.readConfigFile((world_path + DIR_DELIM 
+			bool success = world_mt.readConfigFile((world_path + DIR_DELIM
 				+ "world.mt").c_str());
 			if (!success) {
 				errorstream << "Cannot read world.mt" << std::endl;
@@ -1237,7 +1237,7 @@ int main(int argc, char *argv[])
 				new_db = new Database_Redis(&(ServerMap&)server.getMap(), world_path);
 			#endif
 			else {
-				errorstream << "Migration to " << migrate_to 
+				errorstream << "Migration to " << migrate_to
 					<< " is not supported" << std::endl;
 				return 1;
 			}
@@ -1429,17 +1429,18 @@ int main(int argc, char *argv[])
 		ELL_ERROR,
 		ELL_WARNING,
 		ELL_INFORMATION,
-#if (IRRLICHT_VERSION_MAJOR == 1 && IRRLICHT_VERSION_MINOR < 8)	
+#if (IRRLICHT_VERSION_MAJOR == 1 && IRRLICHT_VERSION_MINOR < 8)
 		ELL_INFORMATION
 #else
 		ELL_DEBUG
 #endif
 	};
-	
+
 	ILogger* irr_logger = device->getLogger();
 	irr_logger->setLogLevel(irr_log_level[loglevel]);
-	 
+
 	porting::initIrrlicht(device);
+	late_init_default_settings(g_settings);
 
 	/*
 		Continue initialization

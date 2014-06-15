@@ -31,6 +31,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "sound_openal.h"
 #include "clouds.h"
 #include "httpfetch.h"
+#include "constants.h"
 #include "util/numeric.h"
 
 #include <IGUIStaticText.h>
@@ -528,6 +529,7 @@ bool GUIEngine::downloadFile(std::string url,std::string target)
 	HTTPFetchResult fetchresult;
 	fetchrequest.url = url;
 	fetchrequest.caller = HTTPFETCH_SYNC;
+	fetchrequest.timeout = FILE_DOWNLOAD_TIMEOUT;
 	httpfetch_sync(fetchrequest, fetchresult);
 
 	if (fetchresult.succeeded) {

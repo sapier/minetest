@@ -1303,9 +1303,9 @@ void GUIFormSpecMenu::parseTabHeader(parserData* data,std::string element)
 
 		spec.ftype = f_TabHeader;
 
-		v2s32 pos = padding;
+		v2s32 pos(0,0);
 		pos.X += stof(v_pos[0]) * (float)spacing.X;
-		pos.Y += stof(v_pos[1]) * (float)spacing.Y;
+		pos.Y += stof(v_pos[1]) * (float)spacing.Y - m_btn_height * 2;
 		v2s32 geom;
 		geom.X = data->screensize.Y;
 		geom.Y = m_btn_height*2;
@@ -1315,6 +1315,9 @@ void GUIFormSpecMenu::parseTabHeader(parserData* data,std::string element)
 
 		gui::IGUITabControl *e = Environment->addTabControl(rect, this,
 				show_background, show_border, spec.fid);
+		e->setAlignment(irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_UPPERLEFT,
+				irr::gui::EGUIA_UPPERLEFT, irr::gui::EGUIA_LOWERRIGHT);
+		e->setTabHeight(m_btn_height*2);
 
 		if (spec.fname == data->focused_fieldname) {
 			Environment->setFocus(e);

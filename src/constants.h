@@ -57,6 +57,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // Override for the previous one when distance of block is very low
 #define BLOCK_SEND_DISABLE_LIMITS_MAX_D 1
 
+// file download timeout in ms
+#define FILE_DOWNLOAD_TIMEOUT 300000
+
 /*
     Map-related things
 */

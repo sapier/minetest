@@ -6,9 +6,8 @@ PARALLEL = -j4
 # compile with GPROF
 # GPROF = 1
 
-# lib addon cflags
-#do full optimization for libs
-LIB_ADDON_CFLAGS = -O3
+# build for build platform
+APP_PLATFORM = android-9
 
 # paths used for timestaps, dependencys, tree config and libs
 PATHCFGFILE = path.cfg
@@ -22,19 +21,35 @@ ROOT = $(shell pwd)
 ANDROID_VERSION_CODE = 3
 
 ################################################################################
-# toolchain config for arm
+# toolchain config for arm old processors
 ################################################################################
 TARGET_HOST = arm-linux
 TARGET_ABI = armeabi
+TARGET_LIBDIR = armeabi
 TARGET_TOOLCHAIN = arm-linux-androideabi-
 CROSS_PREFIX = arm-linux-androideabi-
 COMPILER_VERSION = 4.8
+
+################################################################################
+# toolchain config for arm new processors
+################################################################################
+#TARGET_HOST = arm-linux
+#TARGET_ABI = armeabi-v7a-hard
+#TARGET_LIBDIR = armeabi-v7a
+#TARGET_TOOLCHAIN = arm-linux-androideabi-
+#TARGET_CFLAGS_ADDON =  -mfpu=vfp -mfloat-abi=hard -D_NDK_MATH_NO_SOFTFP=1 \
+						-mfloat-abi=hard -march=armv7-a
+#TARGET_CXXFLAGS_ADDON = $(TARGET_CFLAGS_ADDON)
+#TARGET_LDFLAGS_ADDON = -Wl,--no-warn-mismatch -lm_hard
+#CROSS_PREFIX = arm-linux-androideabi-
+#COMPILER_VERSION = 4.8
 
 ################################################################################
 # toolchain config for little endian mips
 ################################################################################
 #TARGET_HOST = mipsel-linux
 #TARGET_ABI = mips
+#TARGET_LIBDIR = mips
 #TARGET_TOOLCHAIN = mipsel-linux-android-
 #CROSS_PREFIX = mipsel-linux-android-
 #COMPILER_VERSION = 4.8
@@ -44,6 +59,7 @@ COMPILER_VERSION = 4.8
 ################################################################################
 #TARGET_HOST = x86-linux
 #TARGET_ABI = x86
+#TARGET_LIBDIR = x86
 #TARGET_TOOLCHAIN = x86-
 #CROSS_PREFIX = i686-linux-android-
 #COMPILER_VERSION = 4.8
@@ -175,7 +191,10 @@ $(OPENAL_LIB): $(OPENAL_TIMESTAMP)
 	echo "changed timestamp for openal detected building...";                  \
 	cd ${OPENAL_DIR};                                                          \
 	ndk-build NDEBUD=${NDEBUG} NDK_MODULE_PATH=${NDK_MODULE_PATH} ${PARALLEL}  \
-	APP_ABI=${TARGET_ABI} || exit 1;                                           \
+	APP_ABI=${TARGET_ABI} APP_PLATFORM=${APP_PLATFORM}                         \
+	TARGET_CFLAGS+="${TARGET_CFLAGS_ADDON}"                                    \
+	TARGET_LDFLAGS+="${TARGET_LDFLAGS_ADDON}"                                  \
+	TARGET_CXXFLAGS+="${TARGET_CXXFLAGS_ADDON}" || exit 1;                     \
 	touch ${OPENAL_TIMESTAMP};                                                 \
 	touch ${OPENAL_TIMESTAMP_INT};                                             \
 	else                                                                       \
@@ -215,7 +234,10 @@ $(OGG_LIB): $(OGG_TIMESTAMP)
 	echo "changed timestamp for ogg detected building...";                     \
 	cd ${OGG_DIR};                                                             \
 	ndk-build NDEBUG=${NDEBUG} NDK_MODULE_PATH=${NDK_MODULE_PATH} ${PARALLEL}  \
-	APP_ABI=${TARGET_ABI} || exit 1;                                           \
+	APP_ABI=${TARGET_ABI} APP_PLATFORM=${APP_PLATFORM}                         \
+	TARGET_CFLAGS+="${TARGET_CFLAGS_ADDON}"                                    \
+	TARGET_LDFLAGS+="${TARGET_LDFLAGS_ADDON}"                                  \
+	TARGET_CXXFLAGS+="${TARGET_CXXFLAGS_ADDON}" || exit 1;                     \
 	touch ${OGG_TIMESTAMP};                                                    \
 	touch ${OGG_TIMESTAMP_INT};                                                \
 	else                                                                       \
@@ -257,7 +279,10 @@ $(OPENSSL_LIB): $(OPENSSL_TIMESTAMP)
 	cat jni/Application.mk | grep -v NDK_TOOLCHAIN_VERSION >jni/Application.mk.new;\
 	mv jni/Application.mk.new jni/Application.mk;                              \
 	ndk-build NDEBUD=${NDEBUG} NDK_MODULE_PATH=${NDK_MODULE_PATH} ${PARALLEL}  \
-	APP_ABI=${TARGET_ABI} || exit 1;                                           \
+	APP_ABI=${TARGET_ABI} APP_PLATFORM=${APP_PLATFORM}                         \
+	TARGET_CFLAGS+="${TARGET_CFLAGS_ADDON}"                                    \
+	TARGET_LDFLAGS+="${TARGET_LDFLAGS_ADDON}"                                  \
+	TARGET_CXXFLAGS+="${TARGET_CXXFLAGS_ADDON}" || exit 1;                     \
 	touch ${OPENSSL_TIMESTAMP};                                                \
 	touch ${OPENSSL_TIMESTAMP_INT};                                            \
 	else                                                                       \
@@ -303,8 +328,9 @@ $(LEVELDB_LIB): $(LEVELDB_TIMESTAMP)
 	export PATH="$${TOOLCHAIN}/bin:$${PATH}";                                  \
 	export CC=${CROSS_PREFIX}gcc;                                              \
 	export CXX=${CROSS_PREFIX}g++;                                             \
-	export CFLAGS="$${CFLAGS} ${LIB_ADDON_CFLAGS}";                            \
-	export CPPFLAGS="$${CPPFLAGS} ${LIB_ADDON_CFLAGS}";                        \
+	export CFLAGS="$${CFLAGS} ${TARGET_CFLAGS_ADDON}";                         \
+	export CPPFLAGS="$${CPPFLAGS} ${TARGET_CFLAGS_ADDON}";                     \
+	export LDFLAGS="$${LDFLAGS} ${TARGET_LDFLAGS_ADDON}";                      \
 	export TARGET_OS=OS_ANDROID_CROSSCOMPILE;                                  \
 	make -s ${PARALLEL} || exit 1;                                             \
 	touch ${LEVELDB_TIMESTAMP};                                                \
@@ -355,7 +381,10 @@ $(FREETYPE_LIB) : $(FREETYPE_TIMESTAMP)
 	echo "changed timestamp for freetype detected building...";                \
 	cd ${FREETYPE_DIR}/Android/jni;                                            \
 	ndk-build NDEBUG=${NDEBUG} NDK_MODULE_PATH=${NDK_MODULE_PATH} ${PARALLEL}  \
-	APP_ABI=${TARGET_ABI} || exit 1;                                           \
+	APP_PLATFORM=${APP_PLATFORM} APP_ABI=${TARGET_ABI}                         \
+	TARGET_CFLAGS+="${TARGET_CFLAGS_ADDON}"                                    \
+	TARGET_LDFLAGS+="${TARGET_LDFLAGS_ADDON}"                                  \
+	TARGET_CXXFLAGS+="${TARGET_CXXFLAGS_ADDON}" || exit 1;                     \
 	touch ${FREETYPE_TIMESTAMP};                                               \
 	touch ${FREETYPE_TIMESTAMP_INT};                                           \
 	else                                                                       \
@@ -396,7 +425,10 @@ $(IRRLICHT_LIB): $(IRRLICHT_TIMESTAMP) $(FREETYPE_LIB)
 	cd deps/irrlicht/source/Irrlicht/Android;                                  \
 	ndk-build NDEBUG=${NDEBUG} NDK_MODULE_PATH=${NDK_MODULE_PATH} ${PARALLEL}  \
 	IRR_OGLES2_SHADER_PATH=${OGLES2_SHADER_PATH}                               \
-	APP_ABI=${TARGET_ABI} || exit 1;                                           \
+	APP_ABI=${TARGET_ABI} APP_PLATFORM=${APP_PLATFORM}                         \
+	TARGET_CFLAGS+="${TARGET_CFLAGS_ADDON}"                                    \
+	TARGET_LDFLAGS+="${TARGET_LDFLAGS_ADDON}"                                  \
+	TARGET_CXXFLAGS+="${TARGET_CXXFLAGS_ADDON}" || exit 1;                     \
 	touch ${IRRLICHT_TIMESTAMP};                                               \
 	touch ${IRRLICHT_TIMESTAMP_INT};                                           \
 	else                                                                       \
@@ -450,9 +482,10 @@ $(CURL_LIB): $(CURL_TIMESTAMP) $(OPENSSL_LIB)
 	export CXX=${CROSS_PREFIX}g++;                                             \
 	export TARGET_OS=OS_ANDROID_CROSSCOMPILE;                                  \
 	export CPPFLAGS="$${CPPFLAGS} -I${OPENSSL_DIR}/include                     \
-	-L${OPENSSL_DIR}/libs/${TARGET_ABI}/ ${LIB_ADDON_CFLAGS}";                 \
-	export CFLAGS="$${CFLAGS} ${LIB_ADDON_CFLAGS}";                            \
-	export LDFLAGS="$${LDFLAGS} -L${OPENSSL_DIR}/libs/${TARGET_ABI}/";         \
+	-L${OPENSSL_DIR}/libs/${TARGET_ABI}/ ${TARGET_CFLAGS_ADDON}";              \
+	export CFLAGS="$${CFLAGS} ${TARGET_CFLAGS_ADDON}";                         \
+	export LDFLAGS="$${LDFLAGS} -L${OPENSSL_DIR}/libs/${TARGET_ABI}/           \
+	${TARGET_LDFLAGS_ADDON}";                                                  \
 	./configure --host=${TARGET_HOST} --disable-shared --enable-static --with-ssl;  \
 	make -s ${PARALLEL} || exit 1;                                             \
 	touch ${CURL_TIMESTAMP};                                                   \
@@ -581,7 +614,12 @@ apk_debug: $(PATHCFGFILE) assets $(IRRLICHT_LIB) $(CURL_LIB) manifest          \
 	export ANDROID_HOME=${SDKFOLDER};                                          \
 	mkdir -p ${ROOT}/src;                                                      \
 	ndk-build NDK_MODULE_PATH=${NDK_MODULE_PATH}                               \
-	NDEBUG=${NDEBUG} GPROF=${GPROF} APP_ABI=${TARGET_ABI} ${PARALLEL} &&       \
+	NDEBUG=${NDEBUG} GPROF=${GPROF} APP_ABI=${TARGET_ABI} ${PARALLEL}          \
+	APP_PLATFORM=${APP_PLATFORM}                                               \
+	TARGET_LIBDIR=${TARGET_LIBDIR}                                             \
+	TARGET_CFLAGS+="${TARGET_CFLAGS_ADDON}"                                    \
+	TARGET_LDFLAGS+="${TARGET_LDFLAGS_ADDON}"                                  \
+	TARGET_CXXFLAGS+="${TARGET_CXXFLAGS_ADDON}" &&                             \
 	ant debug &&                                                               \
 	echo "++ Success!" &&                                                      \
 	echo "APK: bin/Minetest-debug.apk" &&                                      \
@@ -593,7 +631,12 @@ apk_release: $(PATHCFGFILE) assets $(IRRLICHT_LIB) $(CURL_LIB) manifest        \
 	export ANDROID_HOME=${SDKFOLDER};                                          \
 	mkdir -p ${ROOT}/src;                                                      \
 	ndk-build NDK_MODULE_PATH=${NDK_MODULE_PATH}                               \
-	NDEBUG= GPROF= APP_ABI=${TARGET_ABI} ${PARALLEL} &&                        \
+	NDEBUG= GPROF= APP_ABI=${TARGET_ABI} ${PARALLEL}                           \
+	APP_PLATFORM=${APP_PLATFORM}                                               \
+	TARGET_LIBDIR=${TARGET_LIBDIR}                                             \
+	TARGET_CFLAGS+="${TARGET_CFLAGS_ADDON}"                                    \
+	TARGET_LDFLAGS+="${TARGET_LDFLAGS_ADDON}"                                  \
+	TARGET_CXXFLAGS+="${TARGET_CXXFLAGS_ADDON}" &&                             \
 	ant release &&                                                             \
 	echo "++ Success!" &&                                                      \
 	echo "APK: bin/Minetest.apk" &&                                            \

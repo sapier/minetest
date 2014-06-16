@@ -24,27 +24,27 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := openal
-LOCAL_SRC_FILES := deps/openal-soft/libs/$(TARGET_ARCH_ABI)/libopenal.so
+LOCAL_SRC_FILES := deps/openal-soft/libs/$(TARGET_LIBDIR)/libopenal.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := ogg
-LOCAL_SRC_FILES := deps/libvorbis-libogg-android/libs/$(TARGET_ARCH_ABI)/libogg.so
+LOCAL_SRC_FILES := deps/libvorbis-libogg-android/libs/$(TARGET_LIBDIR)/libogg.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := vorbis
-LOCAL_SRC_FILES := deps/libvorbis-libogg-android/libs/$(TARGET_ARCH_ABI)/libvorbis.so
+LOCAL_SRC_FILES := deps/libvorbis-libogg-android/libs/$(TARGET_LIBDIR)/libvorbis.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := ssl
-LOCAL_SRC_FILES := deps/openssl-android/libs/$(TARGET_ARCH_ABI)/libssl.so
+LOCAL_SRC_FILES := deps/openssl-android/libs/$(TARGET_LIBDIR)/libssl.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := crypto
-LOCAL_SRC_FILES := deps/openssl-android/libs/$(TARGET_ARCH_ABI)/libcrypto.so
+LOCAL_SRC_FILES := deps/openssl-android/libs/$(TARGET_LIBDIR)/libcrypto.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 

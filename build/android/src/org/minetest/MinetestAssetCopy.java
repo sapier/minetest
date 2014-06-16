@@ -60,11 +60,13 @@ public class MinetestAssetCopy extends Activity {
 				m_Foldername = full_path;
 				publishProgress(0);
 				File current_folder = new File(baseDir + "/" + full_path);
-				if (!current_folder.mkdirs()) {
-					Log.w("MinetestAssetCopy","\t failed create folder: " + baseDir + "/" + full_path);
-				}
-				else {
-					Log.w("MinetestAssetCopy","\t created folder: " + baseDir + "/" + full_path);
+				if (!current_folder.exists()) {
+					if (!current_folder.mkdirs()) {
+						Log.w("MinetestAssetCopy","\t failed create folder: " + baseDir + "/" + full_path);
+					}
+					else {
+						Log.w("MinetestAssetCopy","\t created folder: " + baseDir + "/" + full_path);
+					}
 				}
 				try {
 					String[] current_assets = getAssets().list(full_path);

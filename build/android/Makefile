@@ -190,7 +190,7 @@ $(OPENAL_LIB): $(OPENAL_TIMESTAMP)
 	export PATH=$$PATH:${SDKFOLDER}/platform-tools:${ANDROID_NDK};             \
 	echo "changed timestamp for openal detected building...";                  \
 	cd ${OPENAL_DIR};                                                          \
-	ndk-build NDEBUD=${NDEBUG} NDK_MODULE_PATH=${NDK_MODULE_PATH} ${PARALLEL}  \
+	ndk-build NDEBUG=${NDEBUG} NDK_MODULE_PATH=${NDK_MODULE_PATH} ${PARALLEL}  \
 	APP_ABI=${TARGET_ABI} APP_PLATFORM=${APP_PLATFORM}                         \
 	TARGET_CFLAGS+="${TARGET_CFLAGS_ADDON}"                                    \
 	TARGET_LDFLAGS+="${TARGET_LDFLAGS_ADDON}"                                  \
@@ -278,7 +278,7 @@ $(OPENSSL_LIB): $(OPENSSL_TIMESTAMP)
 	cd ${OPENSSL_DIR};                                                         \
 	cat jni/Application.mk | grep -v NDK_TOOLCHAIN_VERSION >jni/Application.mk.new;\
 	mv jni/Application.mk.new jni/Application.mk;                              \
-	ndk-build NDEBUD=${NDEBUG} NDK_MODULE_PATH=${NDK_MODULE_PATH} ${PARALLEL}  \
+	ndk-build NDEBUG=${NDEBUG} NDK_MODULE_PATH=${NDK_MODULE_PATH} ${PARALLEL}  \
 	APP_ABI=${TARGET_ABI} APP_PLATFORM=${APP_PLATFORM}                         \
 	TARGET_CFLAGS+="${TARGET_CFLAGS_ADDON}"                                    \
 	TARGET_LDFLAGS+="${TARGET_LDFLAGS_ADDON}"                                  \

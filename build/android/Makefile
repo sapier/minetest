@@ -27,6 +27,7 @@ TARGET_HOST = arm-linux
 TARGET_ABI = armeabi
 TARGET_LIBDIR = armeabi
 TARGET_TOOLCHAIN = arm-linux-androideabi-
+TARGET_CFLAGS_ADDON = -mfloat-abi=softfp -mfpu=vfp
 CROSS_PREFIX = arm-linux-androideabi-
 COMPILER_VERSION = 4.8
 
@@ -38,7 +39,7 @@ COMPILER_VERSION = 4.8
 #TARGET_LIBDIR = armeabi-v7a
 #TARGET_TOOLCHAIN = arm-linux-androideabi-
 #TARGET_CFLAGS_ADDON =  -mfpu=vfp -mfloat-abi=hard -D_NDK_MATH_NO_SOFTFP=1 \
-						-mfloat-abi=hard -march=armv7-a
+#						-mfloat-abi=hard -march=armv7-a
 #TARGET_CXXFLAGS_ADDON = $(TARGET_CFLAGS_ADDON)
 #TARGET_LDFLAGS_ADDON = -Wl,--no-warn-mismatch -lm_hard
 #CROSS_PREFIX = arm-linux-androideabi-
@@ -216,6 +217,8 @@ ogg_download :
 		mkdir -p ${ROOT}/deps;                                                 \
 		cd ${ROOT}/deps ;                                                      \
 		git clone https://github.com/vincentjames501/libvorbis-libogg-android|| exit 1;\
+		cd libvorbis-libogg-android ;                                          \
+		patch -p1 < ../../libvorbis-libogg-fpu.patch || exit 1;                \
 	fi
 	
 ogg : $(OGG_LIB)

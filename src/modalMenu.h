@@ -23,8 +23,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irrlichttypes_extrabloated.h"
 #ifdef HAVE_TOUCHSCREENGUI
 #include "touchscreengui.h"
-
-extern TouchScreenGUI *touchscreengui;
 #endif
 
 class GUIModalMenu;
@@ -107,8 +105,8 @@ public:
 		m_menumgr->deletingMenu(this);
 		this->remove();
 #ifdef HAVE_TOUCHSCREENGUI
-		if (touchscreengui)
-			touchscreengui->Show();
+		if (g_touchscreengui)
+			g_touchscreengui->Show();
 #endif
 	}
 

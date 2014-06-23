@@ -1846,7 +1846,7 @@ int main(int argc, char *argv[])
 			*/
 #ifdef HAVE_TOUCHSCREENGUI
 	receiver->m_touchscreengui = new TouchScreenGUI(device, receiver);
-	touchscreengui = receiver->m_touchscreengui;
+	g_touchscreengui = receiver->m_touchscreengui;
 #endif
 			the_game(
 				kill,
@@ -1866,8 +1866,8 @@ int main(int argc, char *argv[])
 			);
 			smgr->clear();
 #ifdef HAVE_TOUCHSCREENGUI
-	delete touchscreengui;
-	touchscreengui = NULL;
+	delete g_touchscreengui;
+	g_touchscreengui = NULL;
 	receiver->m_touchscreengui = NULL;
 #endif
 

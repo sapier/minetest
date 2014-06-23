@@ -18,7 +18,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #ifndef __ANDROID__
-#error this file may not be compiled on any other platform then android!
+#error This file may only be compiled for android!
 #endif
 
 #include "porting.h"
@@ -57,7 +57,7 @@ void android_main(android_app *app)
 	catch(...) {
 		__android_log_print(ANDROID_LOG_ERROR, PROJECT_NAME,
 				"Some exception occured");
-		errorstream << "Uncought exception in main thread!" << std::endl;
+		errorstream << "Uncaught exception in main thread!" << std::endl;
 		retval = -1;
 	}
 
@@ -138,7 +138,7 @@ void initAndroid()
 		exit(-1);
 	}
 
-	nativeActivity = findClass("org/minetest/MtNativeActivity");
+	nativeActivity = findClass("org/minetest/minetest/MtNativeActivity");
 	if (nativeActivity == 0) {
 		errorstream <<
 			"porting::initAndroid unable to find java native activity class" <<

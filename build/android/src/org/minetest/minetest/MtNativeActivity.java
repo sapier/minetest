@@ -1,4 +1,4 @@
-package org.minetest;
+package org.minetest.minetest;
 
 import android.app.NativeActivity;
 import android.content.Intent;
@@ -10,7 +10,6 @@ public class MtNativeActivity extends NativeActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		m_MessagReturnCode = -1;
 		m_MessageReturnValue = "";
 		
@@ -32,15 +31,15 @@ public class MtNativeActivity extends NativeActivity {
 		
 		Intent intent = new Intent(this, MinetestTextEntry.class);
 		Bundle params = new Bundle();
-		params.putString("acceptButton",acceptButton);
-		params.putString("hint",hint);
+		params.putString("acceptButton", acceptButton);
+		params.putString("hint", hint);
 		params.putString("current", current);
 		params.putInt("editType", editType);
 		intent.putExtras(params);
-		startActivityForResult(intent,101);
+		startActivityForResult(intent, 101);
 		m_MessageReturnValue = "";
-		m_MessagReturnCode = -1;
-		}
+		m_MessagReturnCode   = -1;
+	}
 	
 	public static native void putMessageBoxResult(String text);
 	
@@ -69,11 +68,9 @@ public class MtNativeActivity extends NativeActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode,
 			Intent data) {
-		Log.w("MtNativeActivity","onActivityResult called code=" + requestCode + " resultCode=" + resultCode);
 		if (requestCode == 101) {
 			if (resultCode == RESULT_OK) {
 				String text = data.getStringExtra("text"); 
-				Log.w("MtNativeActivity","Got \"" + text + "\" from called activity");
 				m_MessagReturnCode = 0;
 				m_MessageReturnValue = text;
 			}

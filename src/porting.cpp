@@ -170,7 +170,7 @@ int getNumberOfProcessors() {
 }
 
 
-#ifndef _IRR_ANDROID_PLATFORM_
+#ifndef __ANDROID__
 bool threadBindToProcessor(threadid_t tid, int pnumber) {
 #if defined(_WIN32)
 
@@ -468,8 +468,8 @@ void initializePaths()
 			assert("Unable to read bindir" == 0);
 #endif
 		} else {
-		pathRemoveFile(buf, '/');
-		bindir = buf;
+			pathRemoveFile(buf, '/');
+			bindir = buf;
 		}
 	}
 

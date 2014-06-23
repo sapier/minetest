@@ -1,4 +1,4 @@
-package org.minetest;
+package org.minetest.minetest;
 
 import java.io.BufferedReader;
 import java.io.File;

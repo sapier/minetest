@@ -35,7 +35,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #ifdef HAVE_TOUCHSCREENGUI
 #include "touchscreengui.h"
-extern TouchScreenGUI *touchscreengui;
 #endif
 
 Hud::Hud(video::IVideoDriver *driver, scene::ISceneManager* smgr,
@@ -165,8 +164,8 @@ void Hud::drawItems(v2s32 upperleftpos, s32 itemcount, s32 offset,
 		InventoryList *mainlist, u16 selectitem, u16 direction)
 {
 #ifdef HAVE_TOUCHSCREENGUI
-	if ( (touchscreengui) && (offset == 0))
-		touchscreengui->resetHud();
+	if ( (g_touchscreengui) && (offset == 0))
+		g_touchscreengui->resetHud();
 #endif
 
 	s32 height  = m_hotbar_imagesize + m_padding * 2;
@@ -233,8 +232,8 @@ void Hud::drawItems(v2s32 upperleftpos, s32 itemcount, s32 offset,
 		drawItem(mainlist->getItem(i), (imgrect + pos + steppos), (i +1) == selectitem );
 
 #ifdef HAVE_TOUCHSCREENGUI
-		if (touchscreengui)
-			touchscreengui->registerHudItem(i, (imgrect + pos + steppos));
+		if (g_touchscreengui)
+			g_touchscreengui->registerHudItem(i, (imgrect + pos + steppos));
 #endif
 	}
 }

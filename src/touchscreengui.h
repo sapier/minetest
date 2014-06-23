@@ -156,4 +156,5 @@ private:
 	/* array for doubletap detection */
 	key_event m_key_events[2];
 };
+extern TouchScreenGUI *g_touchscreengui;
 #endif

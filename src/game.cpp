@@ -72,7 +72,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #ifdef HAVE_TOUCHSCREENGUI
 #include "touchscreengui.h"
-TouchScreenGUI *touchscreengui;
 #endif
 
 /*
@@ -1559,8 +1558,8 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 	guitext_profiler->setWordWrap(true);
 
 #ifdef HAVE_TOUCHSCREENGUI
-	if (touchscreengui)
-		touchscreengui->init(tsrc,porting::getDisplayDensity());
+	if (g_touchscreengui)
+		g_touchscreengui->init(tsrc,porting::getDisplayDensity());
 #endif
 
 	/*
@@ -1875,8 +1874,8 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 		// Input handler step() (used by the random input generator)
 		input->step(dtime);
 #ifdef HAVE_TOUCHSCREENGUI
-		if (touchscreengui) {
-			touchscreengui->step(dtime);
+		if (g_touchscreengui) {
+			g_touchscreengui->step(dtime);
 		}
 #endif
 #ifdef __ANDROID__
@@ -2253,9 +2252,9 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 				first_loop_after_window_activation = false;
 			} else {
 #ifdef HAVE_TOUCHSCREENGUI
-				if (touchscreengui) {
-					camera_yaw   = touchscreengui->getYaw();
-					camera_pitch = touchscreengui->getPitch();
+				if (g_touchscreengui) {
+					camera_yaw   = g_touchscreengui->getYaw();
+					camera_pitch = g_touchscreengui->getPitch();
 				} else {
 #endif
 					s32 dx = input->getMousePos().X - (driver->getScreenSize().Width/2);
@@ -2712,8 +2711,8 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 			shootline = core::line3d<f32>(0,0,0,0,0,0);
 
 #ifdef HAVE_TOUCHSCREENGUI
-		if ((g_settings->getBool("touchtarget")) && (touchscreengui)) {
-			shootline = touchscreengui->getShootline();
+		if ((g_settings->getBool("touchtarget")) && (g_touchscreengui)) {
+			shootline = g_touchscreengui->getShootline();
 			shootline.start += intToFloat(camera_offset,BS);
 			shootline.end += intToFloat(camera_offset,BS);
 		}

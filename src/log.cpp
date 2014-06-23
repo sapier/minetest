@@ -141,7 +141,7 @@ public:
 	void printbuf()
 	{
 		log_printline(m_lev, m_buf);
-#ifdef _IRR_ANDROID_PLATFORM_
+#ifdef __ANDROID__
 		__android_log_print(ANDROID_LOG_ERROR, PROJECT_NAME, "%s", m_buf.c_str());
 #endif
 	}

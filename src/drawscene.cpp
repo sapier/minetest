@@ -431,7 +431,7 @@ void draw_scene(video::IVideoDriver* driver, scene::ISceneManager* smgr,
 		try {
 			draw_crosshair = !g_settings->getBool("touchtarget");
 		}
-		catch(...) {}
+		catch(SettingNotFoundException) {}
 #endif
 
 		std::string draw_mode = g_settings->get("3d_mode");

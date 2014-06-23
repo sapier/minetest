@@ -1,4 +1,4 @@
-package org.minetest;
+package org.minetest.minetest;
 
 import android.app.Activity;
 import android.app.AlertDialog;

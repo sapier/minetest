@@ -79,6 +79,8 @@ static irr::EKEY_CODE id2keycode(touch_gui_button_id id)
 	return keyname_to_keycode(g_settings->get("keymap_" + key).c_str());
 }
 
+TouchScreenGUI *g_touchscreengui;
+
 TouchScreenGUI::TouchScreenGUI(IrrlichtDevice *device, IEventReceiver* receiver):
 	m_device(device),
 	m_guienv(device->getGUIEnvironment()),
@@ -549,40 +551,43 @@ bool TouchScreenGUI::doubleTapDetection()
 	m_key_events[1].y         = m_move_downlocation.Y;
 
 	u32 delta = porting::getDeltaMs(m_key_events[0].down_time,getTimeMs());
-	if (delta < 400) {
-		double distance = sqrt(
-						(m_key_events[0].x - m_key_events[1].x) * (m_key_events[0].x - m_key_events[1].x) +
-						(m_key_events[0].y - m_key_events[1].y) * (m_key_events[0].y - m_key_events[1].y));
-		if (distance < (20 + g_settings->getU16("touchscreen_threshold"))) {
-			SEvent* translated = new SEvent();
-			memset(translated,0,sizeof(SEvent));
-			translated->EventType               = EET_MOUSE_INPUT_EVENT;
-			translated->MouseInput.X            = m_key_events[0].x;
-			translated->MouseInput.Y            = m_key_events[0].y;
-			translated->MouseInput.Shift        = false;
-			translated->MouseInput.Control      = false;
-			translated->MouseInput.ButtonStates = EMBSM_RIGHT;
+	if (delta > 400)
+		return false;
 
-			// update shootline
-			m_shootline = m_device
-					->getSceneManager()
-					->getSceneCollisionManager()
-					->getRayFromScreenCoordinates(v2s32(m_key_events[0].x, m_key_events[0].y));
+	double distance = sqrt(
+			(m_key_events[0].x - m_key_events[1].x) * (m_key_events[0].x - m_key_events[1].x) +
+			(m_key_events[0].y - m_key_events[1].y) * (m_key_events[0].y - m_key_events[1].y));
 
-			translated->MouseInput.Event = EMIE_RMOUSE_PRESSED_DOWN;
-			verbosestream << "TouchScreenGUI::translateEvent right click press" << std::endl;
-			m_receiver->OnEvent(*translated);
 
-			translated->MouseInput.ButtonStates = 0;
-			translated->MouseInput.Event        = EMIE_RMOUSE_LEFT_UP;
-			verbosestream << "TouchScreenGUI::translateEvent right click release" << std::endl;
-			m_receiver->OnEvent(*translated);
-			delete translated;
-			return true;
-		}
-	}
+	if (distance >(20 + g_settings->getU16("touchscreen_threshold")))
+		return false;
 
-	return false;
+	SEvent* translated = new SEvent();
+	memset(translated,0,sizeof(SEvent));
+	translated->EventType               = EET_MOUSE_INPUT_EVENT;
+	translated->MouseInput.X            = m_key_events[0].x;
+	translated->MouseInput.Y            = m_key_events[0].y;
+	translated->MouseInput.Shift        = false;
+	translated->MouseInput.Control      = false;
+	translated->MouseInput.ButtonStates = EMBSM_RIGHT;
+
+	// update shootline
+	m_shootline = m_device
+			->getSceneManager()
+			->getSceneCollisionManager()
+			->getRayFromScreenCoordinates(v2s32(m_key_events[0].x, m_key_events[0].y));
+
+	translated->MouseInput.Event = EMIE_RMOUSE_PRESSED_DOWN;
+	verbosestream << "TouchScreenGUI::translateEvent right click press" << std::endl;
+	m_receiver->OnEvent(*translated);
+
+	translated->MouseInput.ButtonStates = 0;
+	translated->MouseInput.Event        = EMIE_RMOUSE_LEFT_UP;
+	verbosestream << "TouchScreenGUI::translateEvent right click release" << std::endl;
+	m_receiver->OnEvent(*translated);
+	delete translated;
+	return true;
+
 }
 
 TouchScreenGUI::~TouchScreenGUI()

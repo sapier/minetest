@@ -226,3 +226,15 @@
  }
  
  
+--- irrlicht/source/Irrlicht/COGLESTexture.cpp.orig	2014-06-25 00:28:50.820501856 +0200
++++ irrlicht/source/Irrlicht/COGLESTexture.cpp	2014-06-25 00:08:37.712544692 +0200
+@@ -422,6 +422,9 @@
+ 			source = dest;
+ 		}
+ 
++		//clear old error
++		glGetError();
++
+ 		if (newTexture)
+ 		{
+ 			if (IsCompressed)

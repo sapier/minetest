@@ -1000,6 +1000,22 @@ static void show_pause_menu(GUIFormSpecMenu** cur_formspec,
 		IWritableTextureSource* tsrc, IrrlichtDevice * device,
 		bool singleplayermode)
 {
+#ifdef __ANDROID__
+	std::string control_text = wide_to_narrow(wstrgettext("Default Controls:\n"
+			"No menu visible:\n"
+			"- single tap: button activate\n"
+			"- double tap: place/use\n"
+			"- slide finger: look around\n"
+			"Menu/Inventory visible:\n"
+			"- double tap (outside):\n"
+			" -->close\n"
+			"- touch stack, touch slot:\n"
+			" --> move stack\n"
+			"- touch&drag, tap 2nd finger\n"
+			" --> place single item to slot\n"
+			));
+	errorstream << control_text << std::endl;
+#else
 	std::string control_text = wide_to_narrow(wstrgettext("Default Controls:\n"
 			"- WASD: move\n"
 			"- Space: jump/climb\n"
@@ -1012,7 +1028,7 @@ static void show_pause_menu(GUIFormSpecMenu** cur_formspec,
 			"- Mouse wheel: select item\n"
 			"- T: chat\n"
 			));
-
+#endif
 	float ypos = singleplayermode ? 1.0 : 0.5;
 	std::ostringstream os;
 
@@ -1031,7 +1047,7 @@ static void show_pause_menu(GUIFormSpecMenu** cur_formspec,
 					<< wide_to_narrow(wstrgettext("Exit to Menu")) << "]";
 	os		<< "button_exit[4," << (ypos++) << ";3,0.5;btn_exit_os;"
 					<< wide_to_narrow(wstrgettext("Exit to OS"))   << "]"
-			<< "textarea[7.5,0.25;3.75,6;;" << control_text << ";]"
+			<< "textarea[7.5,0.25;3.9,6.25;;" << control_text << ";]"
 			<< "textarea[0.4,0.25;3.5,6;;" << "Minetest\n"
 			<< minetest_build_info << "\n"
 			<< "path_user = " << wrap_rows(porting::path_user, 20)

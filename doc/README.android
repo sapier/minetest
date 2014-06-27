@@ -1,0 +1,120 @@
+Minetest Android port
+=====================
+Date: 2014 06 28
+
+Controls
+--------
+Android port doesn't support everything you can do on PC due to limited
+possibilities of common devices. What can be done is described below:
+
+In case no menu or inventory is shown following controls are available:
+* Look around: touch screen and slide finger
+* double tap: place a node or use selected item
+* long tap: dig node
+* touch shown buttons: press button
+* Buttons:
+** left upper corner: chat
+** right lower corner: jump
+** right lower corner: crunch
+** left lower corner:
+   left up right
+       down
+** left lower corner: inventory
+
+In case a menu or inventory is active:
+* double tap outside menu: close menu
+* tap a item stack: select that stack
+* tap a empty slot: case you selected a stack befor that stack is placed here
+* touch stack and hold finger down, move to another slot, tap another finger
+  while keeping first finger on screen
+  --> place a single item from dragged stack to current (first finger) slot
+
+Special settings
+----------------
+There are some settings specially usefull for android users. Minetest config
+file can usually be found at /mnt/sdcard/Minetest.
+
+* gui_scaling: this is a user specified scaling factor to gui, case main menu
+               is to big or small on your device try changing this value
+* inventory_image_hack: case your inventory items are messed up try setting this
+               to true
+
+Known issues
+------------
+Not all issues are fixed by now:
+
+* can't exit volume menu ... don't use the volume menu, use android volume
+* 512mb ram seem to be low --> this depends on server you join, try to use more
+  lightweight servers.
+
+Versioning
+----------
+Android version numbers are 4 digits instead of Minetests 3 digits. Last number
+of Android version represents the Android internam version code. Version code
+is strictly incremental. It's incremented for each official minetest android
+build.
+E.g. pre release mintest android builds have been 0.4.9.3 ... first official
+version most likely will be 0.4.10.4
+
+Requirements
+------------
+
+In order to build your PC has to be set up to build Minetest, see regular
+Minetest documentation how to get this done.
+Additionally to what is required for Minetest you need following software
+packages. The version number in brackets denotes the version this readme was
+tested, newer/older versions may or may not work.
+
+* android SDK (x86_64 20131030)
+* android NDK (r9d)
+* wget (1.13.4)
+
+Additionally you'll need to have a internet connection as android build will
+download some source packages.
+
+Build
+-----
+
+Debug build:
+* Enter "build/android" subdirectory
+* Enter "make"
+* Answer questions about where SDK and NDK are located on your filesystem
+* Wait for build to finish
+
+After build is finished resulting apk can be fond in build/android/bin/ it's
+called Minetest-debug.apk
+
+Release build:
+
+* In order to do a release build you'll have to have a keystore setup to sign the
+  resulting apk package. How this is done is not part of this readme. There are
+  different howtos around internet choose yourself.
+
+* Once your keystore is setup enter build/android subdirectory and create a new
+  file "ant.properties" in there. Add following lines:
+  
+  > key.store=<path to your keystore>
+  > key.alias=Minetest
+
+* Enter "make release"
+* Enter your keystore as well as Mintest password once asked to do.
+* result can be found at "bin/Minetest-release.apk"
+
+Nice to know
+------------
+* Environment to android development tools is saved within android build folder,
+  if you want direct access to it do:
+  
+  > make envpaths
+  > . and_env
+  
+  After you did this you'll have path and path variables set correct to use adb
+  and all other android development tools
+
+* You can build a single dependency by calling make and it's name, e.g.
+
+  > make irrlicht
+
+* You can completely cleanup a dependency by calling make and clean target, e.g.
+
+  > make clean_irrlicht

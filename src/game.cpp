@@ -1014,7 +1014,6 @@ static void show_pause_menu(GUIFormSpecMenu** cur_formspec,
 			"- touch&drag, tap 2nd finger\n"
 			" --> place single item to slot\n"
 			));
-	errorstream << control_text << std::endl;
 #else
 	std::string control_text = wide_to_narrow(wstrgettext("Default Controls:\n"
 			"- WASD: move\n"

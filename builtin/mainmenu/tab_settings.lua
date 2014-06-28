@@ -31,7 +31,6 @@ end
 local function dlg_confirm_reset_btnhandler(this, fields, dialogdata)
 
 	if fields["dlg_reset_singleplayer_confirm"] ~= nil then
-
 		local worldlist = core.get_worlds()
 		local found_singleplayerworld = false
 
@@ -63,14 +62,15 @@ local function dlg_confirm_reset_btnhandler(this, fields, dialogdata)
 	this.parent:show()
 	this:hide()
 	this:delete()
+	return true
 end
 
 local function showconfirm_reset(tabview)
 	local new_dlg = dialog_create("reset_spworld",
 		dlg_confirm_reset_formspec,
 		dlg_confirm_reset_btnhandler,
-		nil,
-		tabview)
+		nil)
+	new_dlg:set_parent(tabview)
 	tabview:hide()
 	new_dlg:show()
 end
@@ -116,8 +116,6 @@ local function formspec(tabview, name, tabdata)
 				.. dump(core.setting_getbool("preload_item_visuals"))	.. "]"..
 		"checkbox[1,2.5;cb_particles;".. fgettext("Enable Particles") .. ";"
 				.. dump(core.setting_getbool("enable_particles"))	.. "]"..
-		"checkbox[1,3.0;cb_finite_liquid;".. fgettext("Finite Liquid") .. ";"
-				.. dump(core.setting_getbool("liquid_finite")) .. "]"..
 		"box[4.25,0;3.25,2.5;#999999]" ..
 		"checkbox[4.5,0;cb_mipmapping;".. fgettext("Mip-Mapping") .. ";"
 				.. dump(core.setting_getbool("mip_map")) .. "]"..
@@ -234,10 +232,6 @@ local function handle_settings_buttons(this, fields, tabname, tabdata)
 		core.setting_set("enable_particles", fields["cb_particles"])
 		return true
 	end
-	if fields["cb_finite_liquid"] then
-		core.setting_set("liquid_finite", fields["cb_finite_liquid"])
-		return true
-	end
 	if fields["cb_bumpmapping"] then
 		core.setting_set("enable_bumpmapping", fields["cb_bumpmapping"])
 	end
@@ -267,18 +261,23 @@ local function handle_settings_buttons(this, fields, tabname, tabdata)
 		core.setting_set("touchtarget", fields["cb_touchscreen_target"])
 		return true
 	end
-	if fields["dd_touchthreshold"] then
-		core.setting_set("touchscreen_threshold",fields["dd_touchthreshold"])
-		return true
-	end
-	if fields["dd_gui_scaling"] then
-		core.setting_set("gui_scaling",fields["dd_gui_scaling"])
-		return true
-	end
 	if fields["btn_reset_singleplayer"] then
+		print("sp reset")
 		showconfirm_reset(this)
 		return true
 	end
+	--Note dropdowns have to be handled LAST!
+	local ddhandled = false
+	if fields["dd_touchthreshold"] then
+		core.setting_set("touchscreen_threshold",fields["dd_touchthreshold"])
+		ddhandled = true
+	end
+	if fields["dd_gui_scaling"] then
+		core.setting_set("gui_scaling",fields["dd_gui_scaling"])
+		ddhandled = true
+	end
+	
+	return ddhandled
 end
 
 tab_settings = {

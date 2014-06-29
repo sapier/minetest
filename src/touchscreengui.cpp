@@ -203,7 +203,10 @@ void TouchScreenGUI::init(ISimpleTextureSource* tsrc, float density)
 			L"H",false);
 
 	/* init chat button */
-	initButton(chat_id, rect<s32>(0, 0, button_size, button_size), L"Chat", true);
+	initButton(chat_id,
+			rect<s32>(m_screensize.X-(1.5*button_size), 0,
+					m_screensize.X, button_size),
+			L"Chat", true);
 }
 
 touch_gui_button_id TouchScreenGUI::getButtonID(s32 x, s32 y)

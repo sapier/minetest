@@ -491,17 +491,21 @@ bool Settings::getFlagStrNoEx(const std::string &name, u32 &val, FlagDesc *flagd
 
 void Settings::set(const std::string &name, std::string value)
 {
+    {
 	JMutexAutoLock lock(m_mutex);
-
 	m_settings[name] = value;
+    }
+    doCallbacks(name);
 }
 
 
 void Settings::set(const std::string &name, const char *value)
 {
+    {
 	JMutexAutoLock lock(m_mutex);
-
 	m_settings[name] = value;
+    }
+    doCallbacks(name); 
 }
 
 
@@ -700,3 +704,25 @@ void Settings::clearNoLock()
 	m_defaults.clear();
 }
 
+void Settings::registerChangedCallback(std::string name, setting_changed_callback cbf)
+{
+	m_callbacks[name].push_back(cbf);
+}
+
+void Settings::doCallbacks(std::string name)
+{
+	std::vector<setting_changed_callback> tempvector;
+	{
+		JMutexAutoLock lock(m_mutex);
+		if (m_callbacks.find(name) != m_callbacks.end()) {
+
+			tempvector = m_callbacks[name];
+		}
+	}
+
+	for (std::vector<setting_changed_callback>::iterator iter = tempvector.begin();
+			iter != tempvector.end(); iter ++)
+	{
+		(*iter)();
+	}
+}

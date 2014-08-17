@@ -70,6 +70,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/pointedthing.h"
 #include "drawscene.h"
 #include "content_cao.h"
+#include "fontengine.h"
 
 #ifdef HAVE_TOUCHSCREENGUI
 #include "touchscreengui.h"
@@ -1076,9 +1077,10 @@ static void show_pause_menu(GUIFormSpecMenu** cur_formspec,
 /******************************************************************************/
 static void updateChat(Client& client, f32 dtime, bool show_debug,
 		const v2u32& screensize, bool show_chat, u32 show_profiler,
-		ChatBackend& chat_backend, gui::IGUIStaticText* guitext_chat,
-		gui::IGUIFont* font)
+		ChatBackend& chat_backend, gui::IGUIStaticText* guitext_chat)
 {
+	irr::gui::IGUIFont* font = fe->getFont();
+	
 	// Add chat log output for errors to be shown in chat
 	static LogOutputBuffer chat_log_error_buf(LMT_ERROR);
 
@@ -1129,7 +1131,7 @@ static void updateChat(Client& client, f32 dtime, bool show_debug,
 
 /******************************************************************************/
 void the_game(bool &kill, bool random_input, InputHandler *input,
-	IrrlichtDevice *device, gui::IGUIFont* font, std::string map_dir,
+	IrrlichtDevice *device, std::string map_dir,
 	std::string playername, std::string password,
 	std::string address /* If "", local server is used */,
 	u16 port, std::wstring &error_message, ChatBackend &chat_backend,
@@ -1140,16 +1142,13 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 	video::IVideoDriver* driver = device->getVideoDriver();
 	scene::ISceneManager* smgr = device->getSceneManager();
 
-	// Calculate text height using the font
-	u32 text_height = font->getDimension(L"Random test string").Height;
-
 	/*
 		Draw "Loading" screen
 	*/
 
 	{
 		wchar_t* text = wgettext("Loading...");
-		draw_load_screen(text, device, guienv, font, 0, 0);
+		draw_load_screen(text, device, guienv, 0, 0);
 		delete[] text;
 	}
 
@@ -1206,7 +1205,7 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 
 	if(address == ""){
 		wchar_t* text = wgettext("Creating server....");
-		draw_load_screen(text, device, guienv, font, 0, 25);
+		draw_load_screen(text, device, guienv, 0, 25);
 		delete[] text;
 		infostream<<"Creating server"<<std::endl;
 
@@ -1249,7 +1248,7 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 
 	{
 		wchar_t* text = wgettext("Creating client...");
-		draw_load_screen(text, device, guienv, font, 0, 50);
+		draw_load_screen(text, device, guienv, 0, 50);
 		delete[] text;
 	}
 	infostream<<"Creating client"<<std::endl;
@@ -1258,7 +1257,7 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 
 	{
 		wchar_t* text = wgettext("Resolving address...");
-		draw_load_screen(text, device, guienv, font, 0, 75);
+		draw_load_screen(text, device, guienv, 0, 75);
 		delete[] text;
 	}
 	Address connect_address(0,0,0,0, port);
@@ -1357,7 +1356,7 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 			// Display status
 			{
 				wchar_t* text = wgettext("Connecting to server...");
-				draw_load_screen(text, device, guienv, font, dtime, 100);
+				draw_load_screen(text, device, guienv, dtime, 100);
 				delete[] text;
 			}
 
@@ -1460,14 +1459,14 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 			{
 				wchar_t* text = wgettext("Item definitions...");
 				progress = 0;
-				draw_load_screen(text, device, guienv, font, dtime, progress);
+				draw_load_screen(text, device, guienv, dtime, progress);
 				delete[] text;
 			}
 			else if (!client.nodedefReceived())
 			{
 				wchar_t* text = wgettext("Node definitions...");
 				progress = 25;
-				draw_load_screen(text, device, guienv, font, dtime, progress);
+				draw_load_screen(text, device, guienv, dtime, progress);
 				delete[] text;
 			}
 			else
@@ -1490,7 +1489,7 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 				}
 				progress = 50+client.mediaReceiveProgress()*50+0.5;
 				draw_load_screen(narrow_to_wide(message.str().c_str()), device,
-						guienv, font, dtime, progress);
+						guienv, dtime, progress);
 			}
 
 			// On some computers framerate doesn't seem to be
@@ -1534,7 +1533,7 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 		After all content has been received:
 		Update cached textures, meshes and materials
 	*/
-	client.afterContentReceived(device,font);
+	client.afterContentReceived(device, fe->getFont());
 
 	/*
 		Create the camera node
@@ -1598,7 +1597,7 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 	// Object infos are shown in this
 	gui::IGUIStaticText *guitext_info = guienv->addStaticText(
 			L"",
-			core::rect<s32>(0,0,400,text_height*5+5) + v2s32(100,200),
+			core::rect<s32>(0,0,400, (fe->getTextHeight() * 5) + 5) + v2s32(100,200),
 			false, true, guiroot);
 
 	// Status text (displays info when showing and hiding GUI stuff, etc.)
@@ -1716,7 +1715,7 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 	/*
 		HUD object
 	*/
-	Hud hud(driver, smgr, guienv, font, text_height,
+	Hud hud(driver, smgr, guienv, fe->getFont(), fe->getTextHeight(),
 			gamedef, player, &local_inventory);
 
 	core::stringw str = L"Minetest [";
@@ -1931,8 +1930,8 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 				g_profiler->print(infostream);
 			}
 
-			update_profiler_gui(guitext_profiler, font, text_height,
-					show_profiler, show_profiler_max);
+			update_profiler_gui(guitext_profiler, fe->getFont(),
+					fe->getTextHeight(), show_profiler, show_profiler_max);
 
 			g_profiler->clear();
 		}
@@ -2166,8 +2165,8 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 			show_profiler = (show_profiler + 1) % (show_profiler_max + 1);
 
 			// FIXME: This updates the profiler with incomplete values
-			update_profiler_gui(guitext_profiler, font, text_height,
-					show_profiler, show_profiler_max);
+			update_profiler_gui(guitext_profiler, fe->getFont(),
+					fe->getTextHeight(), show_profiler, show_profiler_max);
 
 			if(show_profiler != 0)
 			{
@@ -3293,7 +3292,7 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 				5,
 				5,
 				screensize.X,
-				5 + text_height
+				5 + fe->getTextHeight()
 			);
 			guitext->setRelativePosition(rect);
 		}
@@ -3313,9 +3312,9 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 
 			core::rect<s32> rect(
 				5,
-				5 + text_height,
+				5 + fe->getTextHeight(),
 				screensize.X,
-				5 + (text_height * 2)
+				5 + (fe->getTextHeight() * 2)
 			);
 			guitext2->setRelativePosition(rect);
 		}
@@ -3374,7 +3373,7 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 			Get chat messages from client
 		*/
 		updateChat(client, dtime, show_debug, screensize, show_chat,
-				show_profiler, chat_backend, guitext_chat, font);
+				show_profiler, chat_backend, guitext_chat);
 
 		/*
 			Inventory
@@ -3441,7 +3440,7 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 		*/
 		if(show_profiler_graph)
 		{
-			graph.draw(10, screensize.Y - 10, driver, font);
+			graph.draw(10, screensize.Y - 10, driver, fe->getFont());
 		}
 
 		/*
@@ -3514,7 +3513,7 @@ void the_game(bool &kill, bool random_input, InputHandler *input,
 	*/
 	{
 		wchar_t* text = wgettext("Shutting down stuff...");
-		draw_load_screen(text, device, guienv, font, 0, -1, false);
+		draw_load_screen(text, device, guienv, 0, -1, false);
 		delete[] text;
 	}
 

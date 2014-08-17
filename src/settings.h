@@ -45,6 +45,8 @@ struct ValueSpec
 	const char *help;
 };
 
+/** function type to register a changed callback */
+typedef void (*setting_changed_callback)();
 
 class Settings
 {
@@ -85,6 +87,7 @@ public:
 	v3f getV3F(const std::string &name) const;
 	u32 getFlagStr(const std::string &name, const FlagDesc *flagdesc,
 			u32 *flagmask) const;
+
 	// N.B. if getStruct() is used to read a non-POD aggregate type,
 	// the behavior is undefined.
 	bool getStruct(const std::string &name, const std::string &format,
@@ -139,6 +142,7 @@ public:
 	void clear();
 	void updateValue(const Settings &other, const std::string &name);
 	void update(const Settings &other);
+	void registerChangedCallback(std::string name, setting_changed_callback cbf);
 
 
 private:
@@ -165,10 +169,10 @@ private:
 
 	void updateNoLock(const Settings &other);
 	void clearNoLock();
-
-
+	void doCallbacks(std::string name);
 	std::map<std::string, std::string> m_settings;
 	std::map<std::string, std::string> m_defaults;
+	std::map<std::string, std::vector<setting_changed_callback> > m_callbacks;
 	// All methods that access m_settings/m_defaults directly should lock this.
 	mutable JMutex m_mutex;
 };

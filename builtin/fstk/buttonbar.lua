@@ -58,7 +58,7 @@ local function buttonbar_formspec(self)
 			
 		formspec = formspec ..
 			string.format("image_button[%f,%f;%f,%f;%s;%s;%s;true;%s]",
-					btn_pos.x, btn_pos.y, self.btn_size, self.btn_size,
+					btn_pos.x, btn_pos.y, (self.btn_size*0.9), (self.btn_size*0.9),
 					self.buttons[i].image, btn_name, self.buttons[i].caption,
 					borders)
 		else

@@ -44,9 +44,9 @@ end
 --------------------------------------------------------------------------------
 local function get_formspec(tabview, name, tabdata)
 	
-	local retval = "label[4,-0.25;".. fgettext("Select texture pack:") .. "]"..
-			"vertlabel[0,-0.25;".. fgettext("TEXTURE PACKS") .. "]" ..
-			"textlist[4,0.25;7.5,5.0;TPs;"
+	local retval = "label[4,-0.1;".. fgettext("Select texture pack:") .. "]"..
+			"vertlabel[0,-0.15;".. fgettext("TEXTURE PACKS") .. "]" ..
+			"textlist[4,0.5;8,5.5;TPs;"
 
 	local current_texture_path = core.setting_get("texture_path")
 	local list = filter_texture_pack_list(core.get_dirlist(core.get_texturepath(), true))

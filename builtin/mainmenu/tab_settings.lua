@@ -111,8 +111,8 @@ end
 
 local function formspec(tabview, name, tabdata)
 	local tab_string =
-		"vertlabel[0,-0.25;" .. fgettext("SETTINGS") .. "]" ..
-		"box[0.75,0;3.25,4;#999999]" ..
+		"vertlabel[0,-0.15;" .. fgettext("SETTINGS") .. "]" ..
+		"box[0.75,0;3.5,4;#999999]" ..
 		"checkbox[1,0;cb_fancy_trees;".. fgettext("Fancy Trees") .. ";"
 				.. dump(core.setting_getbool("new_style_leaves")) .. "]"..
 		"checkbox[1,0.5;cb_smooth_lighting;".. fgettext("Smooth Lighting")
@@ -125,29 +125,29 @@ local function formspec(tabview, name, tabdata)
 				.. dump(core.setting_getbool("preload_item_visuals"))	.. "]"..
 		"checkbox[1,2.5;cb_particles;".. fgettext("Enable Particles") .. ";"
 				.. dump(core.setting_getbool("enable_particles"))	.. "]"..
-		"box[4.25,0;3.25,2.5;#999999]" ..
-		"checkbox[4.5,0;cb_mipmapping;".. fgettext("Mip-Mapping") .. ";"
+		"box[4.5,0;3.5,2.5;#999999]" ..
+		"checkbox[4.75,0;cb_mipmapping;".. fgettext("Mip-Mapping") .. ";"
 				.. dump(core.setting_getbool("mip_map")) .. "]"..
-		"checkbox[4.5,0.5;cb_anisotrophic;".. fgettext("Anisotropic Filtering") .. ";"
+		"checkbox[4.75,0.5;cb_anisotrophic;".. fgettext("Anisotropic Filtering") .. ";"
 				.. dump(core.setting_getbool("anisotropic_filter")) .. "]"..
-		"checkbox[4.5,1.0;cb_bilinear;".. fgettext("Bi-Linear Filtering") .. ";"
+		"checkbox[4.75,1.0;cb_bilinear;".. fgettext("Bi-Linear Filtering") .. ";"
 				.. dump(core.setting_getbool("bilinear_filter")) .. "]"..
-		"checkbox[4.5,1.5;cb_trilinear;".. fgettext("Tri-Linear Filtering") .. ";"
+		"checkbox[4.75,1.5;cb_trilinear;".. fgettext("Tri-Linear Filtering") .. ";"
 				.. dump(core.setting_getbool("trilinear_filter")) .. "]"..
-		"box[7.75,0;4,4;#999999]" ..
-		"checkbox[8,0;cb_shaders;".. fgettext("Shaders") .. ";"
+		"box[8.25,0;4,4;#999999]" ..
+		"checkbox[8.5,0;cb_shaders;".. fgettext("Shaders") .. ";"
 				.. dump(core.setting_getbool("enable_shaders")) .. "]"
 	if not ANDROID then
 		tab_string = tab_string ..
-		"button[8,4.75;3.75,0.5;btn_change_keys;".. fgettext("Change keys") .. "]"
+		"button[8.25,4.75;4,0.5;btn_change_keys;".. fgettext("Change keys") .. "]"
 	else
 		tab_string = tab_string ..
-		"button[8,4.75;3.75,0.5;btn_reset_singleplayer;".. fgettext("Reset singleplayer world") .. "]"
+		"button[8.25,4.75;4,0.5;btn_reset_singleplayer;".. fgettext("Reset singleplayer world") .. "]"
 	end
 	tab_string = tab_string ..
-		"box[0.75,4.25;3.25,1.25;#999999]" ..
+		"box[0.75,4.25;3.5,1.25;#999999]" ..
 		"label[1,4.25;" .. fgettext("GUI scale factor") .. "]" ..
-		"scrollbar[1,4.75;2.75,0.4;sb_gui_scaling;horizontal;" ..
+		"scrollbar[1,4.8;3,0.5;sb_gui_scaling;horizontal;" ..
 		 gui_scale_to_scrollbar() .. "]" ..
 		"tooltip[sb_gui_scaling;" ..
 			fgettext("Scaling factor applied to menu elements: ") ..
@@ -169,17 +169,17 @@ local function formspec(tabview, name, tabdata)
 
 	if core.setting_getbool("enable_shaders") then
 		tab_string = tab_string ..
-				"checkbox[8,0.5;cb_bumpmapping;".. fgettext("Bumpmapping") .. ";"
+				"checkbox[8.5,0.5;cb_bumpmapping;".. fgettext("Bumpmapping") .. ";"
 						.. dump(core.setting_getbool("enable_bumpmapping")) .. "]"..
-				"checkbox[8,1.0;cb_generate_normalmaps;".. fgettext("Generate Normalmaps") .. ";"
+				"checkbox[8.5,1.0;cb_generate_normalmaps;".. fgettext("Generate Normalmaps") .. ";"
 						.. dump(core.setting_getbool("generate_normalmaps")) .. "]"..
-				"checkbox[8,1.5;cb_parallax;".. fgettext("Parallax Occlusion") .. ";"
+				"checkbox[8.5,1.5;cb_parallax;".. fgettext("Parallax Occlusion") .. ";"
 						.. dump(core.setting_getbool("enable_parallax_occlusion")) .. "]"..
-				"checkbox[8,2.0;cb_waving_water;".. fgettext("Waving Water") .. ";"
+				"checkbox[8.5,2.0;cb_waving_water;".. fgettext("Waving Water") .. ";"
 						.. dump(core.setting_getbool("enable_waving_water")) .. "]"..
-				"checkbox[8,2.5;cb_waving_leaves;".. fgettext("Waving Leaves") .. ";"
+				"checkbox[8.5,2.5;cb_waving_leaves;".. fgettext("Waving Leaves") .. ";"
 						.. dump(core.setting_getbool("enable_waving_leaves")) .. "]"..
-				"checkbox[8,3.0;cb_waving_plants;".. fgettext("Waving Plants") .. ";"
+				"checkbox[8.5,3.0;cb_waving_plants;".. fgettext("Waving Plants") .. ";"
 						.. dump(core.setting_getbool("enable_waving_plants")) .. "]"
 	else
 		tab_string = tab_string ..

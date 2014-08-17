@@ -327,6 +327,8 @@ protected:
 	s32 m_old_tooltip_id;
 	std::string m_old_tooltip;
 
+	unsigned int m_current_font_size;
+
 	bool m_allowclose;
 	bool m_lock;
 	v2u32 m_lockscreensize;
@@ -399,6 +401,8 @@ private:
 	void parseTooltip(parserData* data,std::string element);
 	bool parseVersionDirect(std::string data);
 	void parseScrollBar(parserData* data, std::string element);
+
+	bool parseSizeDirect(parserData* data, std::string element);
 
 	/**
 	 * check if event is part of a double click

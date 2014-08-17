@@ -22,11 +22,11 @@ tab_credits = {
 	caption = fgettext("Credits"),
 	cbf_formspec = function (tabview, name, tabdata)
 			local logofile = defaulttexturedir .. "logo.png"
-			return	"vertlabel[0,-0.25;CREDITS]" ..
-				"label[0.5,3;Minetest " .. core.get_version() .. "]" ..
-				"label[0.5,3.3;http://minetest.net]" ..
+			return	"vertlabel[0,-0.15;CREDITS]" ..
+				"label[0.5,3.5;Minetest " .. core.get_version() .. "]" ..
+				"label[0.5,3.8;http://minetest.net]" ..
 				"image[0.5,1;" .. core.formspec_escape(logofile) .. "]" ..
-				"textlist[3.5,-0.25;8.5,5.8;list_credits;" ..
+				"textlist[3.5,0;8.5,5.8;list_credits;" ..
 				"#FFFF00" .. fgettext("Core Developers") .."," ..
 				"Perttu Ahola (celeron55) <celeron55@gmail.com>,"..
 				"Ryan Kwolek (kwolekr) <kwolekr@minetest.net>,"..

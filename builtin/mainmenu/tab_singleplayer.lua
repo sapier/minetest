@@ -45,7 +45,7 @@ local function singleplayer_refresh_gamebar()
 
 	local btnbar = buttonbar_create("game_button_bar",
 		game_buttonbar_button_handler,
-		{x=-0.3,y=5.65}, "horizontal", {x=12.4,y=1.15})
+		{x=-0.25,y=6.35}, "horizontal", {x=12.5,y=1.25})
 
 	for i=1,#gamemgr.games,1 do
 		local btn_name = "game_btnbar_" .. gamemgr.games[i].id
@@ -80,17 +80,17 @@ local function get_formspec(tabview, name, tabdata)
 				)
 
 	retval = retval ..
-			"button[4,4.15;2.6,0.5;world_delete;".. fgettext("Delete") .. "]" ..
-			"button[6.5,4.15;2.8,0.5;world_create;".. fgettext("New") .. "]" ..
-			"button[9.2,4.15;2.55,0.5;world_configure;".. fgettext("Configure") .. "]" ..
-			"button[8.5,4.95;3.25,0.5;play;".. fgettext("Play") .. "]" ..
-			"label[4,-0.25;".. fgettext("Select World:") .. "]"..
-			"vertlabel[0,-0.25;".. fgettext("SINGLE PLAYER") .. "]" ..
-			"checkbox[0.5,0.25;cb_creative_mode;".. fgettext("Creative Mode") .. ";" ..
+			"button[4,4.5;2.4,0.5;world_delete;".. fgettext("Delete") .. "]" ..
+			"button[6.5,4.50;2.6,0.5;world_create;".. fgettext("New") .. "]" ..
+			"button[9.2,4.50;2.55,0.5;world_configure;".. fgettext("Configure") .. "]" ..
+			"button[8.5,5.4;3.25,0.5;play;".. fgettext("Play") .. "]" ..
+			"label[4,-0.3;".. fgettext("Select World:") .. "]"..
+			"vertlabel[0,-0.15;".. fgettext("SINGLE PLAYER") .. "]" ..
+			"checkbox[0.5,0.55;cb_creative_mode;".. fgettext("Creative Mode") .. ";" ..
 			dump(core.setting_getbool("creative_mode")) .. "]"..
-			"checkbox[0.5,0.7;cb_enable_damage;".. fgettext("Enable Damage") .. ";" ..
+			"checkbox[0.5,1;cb_enable_damage;".. fgettext("Enable Damage") .. ";" ..
 			dump(core.setting_getbool("enable_damage")) .. "]"..
-			"textlist[4,0.25;7.5,3.7;sp_worlds;" ..
+			"textlist[4,0.25;7.75,4.2;sp_worlds;" ..
 			menu_render_worldlist() ..
 			";" .. index .. "]"
 	return retval

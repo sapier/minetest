@@ -72,6 +72,9 @@ static inline float CALC_DTIME(unsigned int lasttime, unsigned int curtime) {
 
 #define PING_TIMEOUT 5.0
 
+/* maximum number of retries for reliable packets */
+#define MAX_RELIABLE_RETRY 5
+
 static u16 readPeerId(u8 *packetdata)
 {
 	return readU16(&packetdata[4]);
@@ -1385,6 +1388,7 @@ void ConnectionSendThread::runTimeouts(float dtime)
 		}
 
 		float resend_timeout = dynamic_cast<UDPPeer*>(&peer)->getResendTimeout();
+		bool retry_count_exceeded = false;
 		for(u16 i=0; i<CHANNEL_COUNT; i++)
 		{
 			std::list<BufferedPacket> timed_outs;
@@ -1424,6 +1428,12 @@ void ConnectionSendThread::runTimeouts(float dtime)
 				channel->UpdateBytesLost(k->data.getSize());
 				k->resend_count++;
 
+				if (k-> resend_count > MAX_RELIABLE_RETRY) {
+					retry_count_exceeded = true;
+					timeouted_peers.push_back(peer->id);
+					continue;
+				}
+
 				LOG(derr_con<<m_connection->getDesc()
 						<<"RE-SENDING timed-out RELIABLE to "
 						<< k->address.serializeString()
@@ -1438,8 +1448,16 @@ void ConnectionSendThread::runTimeouts(float dtime)
 				// do not handle rtt here as we can't decide if this packet was
 				// lost or really takes more time to transmit
 			}
+
+			if (retry_count_exceeded) {
+				continue;
+			}
+
 			channel->UpdateTimers(dtime,dynamic_cast<UDPPeer*>(&peer)->getLegacyPeer());
 		}
+
+		if (retry_count_exceeded)
+			continue;
 
 		/* send ping if necessary */
 		if (dynamic_cast<UDPPeer*>(&peer)->Ping(dtime,data)) {

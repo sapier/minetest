@@ -1431,7 +1431,8 @@ void ConnectionSendThread::runTimeouts(float dtime)
 				if (k-> resend_count > MAX_RELIABLE_RETRY) {
 					retry_count_exceeded = true;
 					timeouted_peers.push_back(peer->id);
-					continue;
+					/* no need to check additional packets if a single one did timeout*/
+					break;
 				}
 
 				LOG(derr_con<<m_connection->getDesc()
@@ -1450,12 +1451,13 @@ void ConnectionSendThread::runTimeouts(float dtime)
 			}
 
 			if (retry_count_exceeded) {
-				continue;
+				break; /* no need to check other channels if we already did timeout */
 			}
 
 			channel->UpdateTimers(dtime,dynamic_cast<UDPPeer*>(&peer)->getLegacyPeer());
 		}
 
+		/* skip to next peer if we did timeout */
 		if (retry_count_exceeded)
 			continue;
 

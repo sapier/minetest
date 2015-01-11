@@ -1,0 +1,65 @@
+--- irrlicht.hwscaler/source/Irrlicht/Android/CIrrDeviceAndroid.cpp	2015-01-12 13:06:14.898681830 +0100
++++ irrlicht.orig/source/Irrlicht/Android/CIrrDeviceAndroid.cpp	2015-01-11 17:02:40.932061654 +0100
+@@ -57,8 +57,7 @@
+ 	Android->onInputEvent = handleInput;
+ 
+ 	// Create EGL manager.
+-	ContextManager = new video::CEGLManager(param.InternalScreenSize);
+-	InternalSize = param.InternalScreenSize;
++	ContextManager = new video::CEGLManager();
+ 
+ 	os::Printer::log("Waiting for Android activity window to be created.", ELL_DEBUG);
+ 
+@@ -126,11 +125,6 @@
+ 	nanosleep(&ts, NULL);
+ }
+ 
+-core::dimension2d<u32> CIrrDeviceAndroid::getInternalSize() const
+-{
+-	return InternalSize;
+-}
+-
+ void CIrrDeviceAndroid::sleep(u32 timeMs, bool pauseTimer)
+ {
+ 	const bool wasStopped = Timer ? Timer->isStopped() : true;
+@@ -321,12 +315,6 @@
+ 				break;
+ 			}
+ 
+-			int IntWidth = device->getInternalSize().Width;
+-			int IntHeight = device->getInternalSize().Height;
+-
+-			if (IntWidth == 0) IntWidth = ANativeWindow_getWidth(app->window);
+-			if (IntHeight == 0) IntHeight = ANativeWindow_getHeight(app->window);
+-
+ 			if (touchReceived)
+ 			{
+ 				// Process all touches for move action.
+@@ -337,12 +325,8 @@
+ 					for (s32 i = 0; i < pointerCount; ++i)
+ 					{
+ 						event.TouchInput.ID = AMotionEvent_getPointerId(androidEvent, i);
+-						event.TouchInput.X =
+-								AMotionEvent_getX(androidEvent, i) *
+-								 ((double) IntWidth / (double) ANativeWindow_getWidth(app->window));
+-						event.TouchInput.Y =
+-								AMotionEvent_getY(androidEvent, i) *
+-								( (double) IntHeight / (double) ANativeWindow_getHeight(app->window));
++						event.TouchInput.X = AMotionEvent_getX(androidEvent, i);
++						event.TouchInput.Y = AMotionEvent_getY(androidEvent, i);
+ 						event.TouchInput.touchedCount = AMotionEvent_getPointerCount(androidEvent);
+ 
+ 						device->postEventFromUser(event);
+@@ -353,10 +337,8 @@
+ 					s32 pointerIndex = (eventAction & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
+ 
+ 					event.TouchInput.ID = AMotionEvent_getPointerId(androidEvent, pointerIndex);
+-					event.TouchInput.X = AMotionEvent_getX(androidEvent, pointerIndex) *
+-							 ((double) IntWidth / (double) ANativeWindow_getWidth(app->window));
+-					event.TouchInput.Y = AMotionEvent_getY(androidEvent, pointerIndex) *
+-							( (double) IntHeight / (double) ANativeWindow_getHeight(app->window));
++					event.TouchInput.X = AMotionEvent_getX(androidEvent, pointerIndex);
++					event.TouchInput.Y = AMotionEvent_getY(androidEvent, pointerIndex);
+ 					event.TouchInput.touchedCount = AMotionEvent_getPointerCount(androidEvent);
+ 
+ 					device->postEventFromUser(event);

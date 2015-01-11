@@ -2068,6 +2068,10 @@ bool ClientLauncher::create_engine_device(int log_level)
 	params.PrivateData = porting::app_global;
 	params.OGLES2ShaderPath = std::string(porting::path_user + DIR_DELIM +
 			"media" + DIR_DELIM + "Shaders" + DIR_DELIM).c_str();
+	params.InternalScreenSize = core::dimension2d<u32>(
+			g_settings->getU16("internal_screen_width"),
+			g_settings->getU16("internal_screen_height")
+			);
 #endif
 
 	device = createDeviceEx(params);

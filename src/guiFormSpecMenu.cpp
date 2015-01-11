@@ -1765,6 +1765,9 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
 	if ((screensize.X <= 0) || (screensize.Y <= 0)) {
 		return;
 	}
+#ifdef __ANDROID__
+	screensize = porting::getWindowSize();
+#endif
 
 	parserData mydata;
 
@@ -2246,7 +2249,7 @@ void GUIFormSpecMenu::drawMenu()
 	video::IVideoDriver* driver = Environment->getVideoDriver();
 
 	v2u32 screenSize = driver->getScreenSize();
-	core::rect<s32> allbg(0, 0, screenSize.X ,	screenSize.Y);
+	core::rect<s32> allbg(0, 0, screenSize.X , screenSize.Y);
 	if (m_bgfullscreen)
 		driver->draw2DRectangle(m_bgcolor, allbg, &allbg);
 	else

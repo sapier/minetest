@@ -79,6 +79,10 @@
 #    Initial window size
 #screenW = 800
 #screenH = 600
+#height/width of screen rendered to, this is scaled up to actual size of window/screen
+# 0 to use same size as window/screen (Android only right now)
+#internal_screen_height=0
+#internal_screen_width=0
 #fullscreen = false
 #fullscreen_bpp = 24
 #    Experimental option, might cause visible spaces between blocks

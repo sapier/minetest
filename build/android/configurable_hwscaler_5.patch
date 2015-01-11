@@ -1,0 +1,19 @@
+--- irrlicht.hwscaler/source/Irrlicht/Android/CIrrDeviceAndroid.h	2015-01-12 13:06:15.090681825 +0100
++++ irrlicht.orig/source/Irrlicht/Android/CIrrDeviceAndroid.h	2015-01-11 17:02:41.128061658 +0100
+@@ -56,8 +56,6 @@
+ 
+ 		virtual E_DEVICE_TYPE getType() const;
+ 
+-		virtual core::dimension2d<u32> getInternalSize() const;
+-
+ 	private:
+ 
+ 		static void handleAndroidCommand(android_app* app, int32_t cmd);
+@@ -73,7 +71,6 @@
+ 		android_app* Android;
+ 		ASensorManager* SensorManager;
+ 		ASensorEventQueue* SensorEventQueue;
+-		core::dimension2d<u32> InternalSize;
+ 
+ 		bool Focused;
+ 		bool Initialized;

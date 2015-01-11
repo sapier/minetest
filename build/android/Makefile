@@ -451,6 +451,11 @@ irrlicht_download :
 		patch -p1 < ../../irrlicht-touchcount.patch || exit 1;                 \
 		patch -p1 < ../../irrlicht-back_button.patch || exit 1;                \
 		patch -p1 < ../../irrlicht-texturehack.patch || exit 1;                \
+		patch -R -p1 < ../../configurable_hwscaler_1.patch || exit 1;            \
+		patch -R -p1 < ../../configurable_hwscaler_2.patch || exit 1;            \
+		patch -R -p1 < ../../configurable_hwscaler_3.patch || exit 1;            \
+		patch -R -p1 < ../../configurable_hwscaler_4.patch || exit 1;            \
+		patch -R -p1 < ../../configurable_hwscaler_5.patch || exit 1;            \
 	fi
 
 irrlicht : $(IRRLICHT_LIB)

@@ -1,0 +1,30 @@
+--- irrlicht.hwscaler/include/SIrrCreationParameters.h	2015-01-12 13:06:14.830681835 +0100
++++ irrlicht.orig/include/SIrrCreationParameters.h	2015-01-11 17:02:40.848061652 +0100
+@@ -54,8 +54,7 @@
+ 	#ifdef _IRR_COMPILE_WITH_IPHONE_DEVICE_
+ 			OGLES2ShaderPath("")
+ 	#elif defined(_IRR_ANDROID_PLATFORM_)
+-			OGLES2ShaderPath("media/Shaders/"),
+-			InternalScreenSize(core::dimension2d<u32>(0,0))
++			OGLES2ShaderPath("media/Shaders/")
+ 	#else
+ 			OGLES2ShaderPath("../../media/Shaders/")
+ 	#endif
+@@ -92,7 +91,6 @@
+ 			UsePerformanceTimer = other.UsePerformanceTimer;
+ 			PrivateData = other.PrivateData;
+ 			OGLES2ShaderPath = other.OGLES2ShaderPath;
+-			InternalScreenSize = other.InternalScreenSize;
+ 			return *this;
+ 		}
+ 
+@@ -318,9 +316,6 @@
+ 		/** This is about the shaders which can be found in media/Shaders by default. It's only necessary
+ 		to set when using OGL-ES 2.0 */
+ 		irr::io::path OGLES2ShaderPath;
+-
+-
+-		core::dimension2d<u32> InternalScreenSize;
+ 	};
+ 
+ 

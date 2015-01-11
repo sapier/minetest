@@ -1,0 +1,25 @@
+--- irrlicht.hwscaler/source/Irrlicht/CEGLManager.h	2015-01-12 13:06:14.830681835 +0100
++++ irrlicht.orig/source/Irrlicht/CEGLManager.h	2015-01-11 17:02:40.852061652 +0100
+@@ -32,11 +32,7 @@
+ 	{
+ 	public:
+ 		//! Constructor.
+-		CEGLManager(
+-#if defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_)
+-		core::dimension2d<u32> internal_size
+-#endif
+-				);
++		CEGLManager();
+ 
+ 		//! Destructor.
+ 		virtual ~CEGLManager();
+@@ -93,9 +89,6 @@
+ 
+ 		EGLint MajorVersion;
+ 		EGLint MinorVersion;
+-#if defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_)
+-		core::dimension2d<u32> InternalSize;
+-#endif
+ 	};
+ }
+ }

@@ -1,0 +1,31 @@
+--- irrlicht.hwscaler/source/Irrlicht/CEGLManager.cpp	2015-01-12 13:06:14.862681834 +0100
++++ irrlicht.orig/source/Irrlicht/CEGLManager.cpp	2015-01-11 17:02:40.884061653 +0100
+@@ -14,15 +14,8 @@
+ namespace video
+ {
+ 
+-CEGLManager::CEGLManager(
+-#if defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_)
+-		core::dimension2d<u32> internal_size
+-#endif
+-	) : IContextManager(), EglWindow(0), EglDisplay(EGL_NO_DISPLAY),
++CEGLManager::CEGLManager() : IContextManager(), EglWindow(0), EglDisplay(EGL_NO_DISPLAY),
+     EglSurface(EGL_NO_SURFACE), EglContext(EGL_NO_CONTEXT), EglConfig(0), MajorVersion(0), MinorVersion(0)
+-#if defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_)
+-	,InternalSize(internal_size)
+-#endif
+ {
+ 	#ifdef _DEBUG
+ 	setDebugName("CEGLManager");
+@@ -249,10 +242,7 @@
+     EGLint Format = 0;
+     eglGetConfigAttrib(EglDisplay, EglConfig, EGL_NATIVE_VISUAL_ID, &Format);
+ 
+-    ANativeWindow_setBuffersGeometry(EglWindow, InternalSize.Width, InternalSize.Height, Format);
+-    os::Printer::log("InternalWidth: ", core::stringc((int)InternalSize.Width), ELL_ERROR);
+-    os::Printer::log("InternalHeight: ", core::stringc((int)InternalSize.Height), ELL_ERROR);
+-
++    ANativeWindow_setBuffersGeometry(EglWindow, 0, 0, Format);
+ #endif
+ 
+ 	// Now we are able to create EGL surface.

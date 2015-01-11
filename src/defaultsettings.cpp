@@ -94,6 +94,8 @@ void set_default_settings(Settings *settings)
 	settings->setDefault("viewing_range_nodes_min", "35");
 	settings->setDefault("screenW", "800");
 	settings->setDefault("screenH", "600");
+	settings->setDefault("internal_screen_width", "0");
+	settings->setDefault("internal_screen_height", "0");
 	settings->setDefault("fullscreen", "false");
 	settings->setDefault("fullscreen_bpp", "24");
 	settings->setDefault("fsaa", "0");

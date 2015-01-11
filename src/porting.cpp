@@ -572,6 +572,13 @@ void setXorgClassHint(const video::SExposedVideoData &video_data,
 #ifndef SERVER
 v2u32 getWindowSize()
 {
+#ifdef __ANDROID__
+	u16 internal_height = g_settings->getU16("internal_screen_height");
+	u16 internal_width = g_settings->getU16("internal_screen_width");
+
+	if ((internal_height != 0 ) || ( internal_width != 0))
+			return v2u32(internal_width, internal_height);
+#endif
 	return device->getVideoDriver()->getScreenSize();
 }
 

@@ -29,6 +29,7 @@ void set_default_settings(Settings *settings)
 	// Client and server
 
 	settings->setDefault("name", "");
+	settings->setDefault("client_protocol", "enet");
 
 	// Client stuff
 	settings->setDefault("remote_port", "30000");

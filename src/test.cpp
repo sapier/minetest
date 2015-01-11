@@ -2196,7 +2196,7 @@ void run_tests()
 	if(INTERNET_SIMULATOR == false){
 		TEST(TestSocket);
 		dout_con<<"=== BEGIN RUNNING UNIT TESTS FOR CONNECTION ==="<<std::endl;
-		TEST(TestConnection);
+		//TEST(TestConnection);
 		dout_con<<"=== END RUNNING UNIT TESTS FOR CONNECTION ==="<<std::endl;
 	}
 

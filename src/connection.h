@@ -32,6 +32,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <fstream>
 #include <list>
 #include <map>
+#include <enet/enet.h>
 
 namespace con
 {
@@ -122,7 +123,8 @@ public:
 typedef enum MTProtocols {
 	MTP_PRIMARY,
 	MTP_UDP,
-	MTP_MINETEST_RELIABLE_UDP
+	MTP_MINETEST_RELIABLE_UDP,
+	MTP_ENET
 } MTProtocols;
 
 #define SEQNUM_MAX 65535
@@ -849,6 +851,53 @@ private:
 	bool m_legacy_peer;
 };
 
+class EnetPeer : public Peer
+{
+public:
+	friend class PeerHelper;
+	friend class ConnectionEnetThread;
+
+	EnetPeer(u16 a_id, Address a_address, Connection* connection, ENetPeer *peer):
+		Peer(a_address,a_id,connection),
+		m_peer(peer){};
+	virtual ~EnetPeer();
+
+	bool getAddress(MTProtocols type, Address& toset) {
+		if ((type == MTP_ENET) || (type == MTP_PRIMARY)) {
+			toset = address;
+			return true;
+		}
+		return false;
+	}
+	float getStat(rtt_stat_type type) const {
+		switch (type) {
+			case MIN_RTT:
+				return m_peer->lowestRoundTripTime/1000.0;
+			case MAX_RTT:
+				return -1.0;
+			case AVG_RTT:
+				return m_peer->roundTripTime/1000.0;
+			case MIN_JITTER:
+				return -1.0;
+			case MAX_JITTER:
+				return m_peer->highestRoundTripTimeVariance/1000.0;
+			case AVG_JITTER:
+				return m_peer->roundTripTimeVariance/1000.0;
+		}
+		return -1;
+	}
+
+	void reportRTT() {
+		float rtt = m_peer->lastRoundTripTime/1000.0;
+		if (rtt > 0.0)
+			RTTStatistics(rtt,"enet",200);
+	}
+protected:
+	ENetPeer *m_peer;
+private:
+
+};
+
 /*
 	Connection
 */
@@ -913,10 +962,37 @@ struct ConnectionEvent
 	}
 };
 
+
+class ConnectionEnetThread : public JThread {
+
+public:
+	//friend class EnetPeer;
+
+	ConnectionEnetThread(Connection* parent);
+	~ConnectionEnetThread()
+		{ if (m_host != 0) enet_host_destroy(m_host); };
+	void * Thread       ();
+
+private:
+
+	void processCommand(ConnectionCommand& c);
+
+	u16 getPeerID(ENetPeer* peer);
+	void sendCmd(ConnectionCommand& c);
+	void sendToAll(ConnectionCommand& c);
+	void connect(ConnectionCommand& c);
+	void disconnect(u16 peer_id);
+
+	Connection*           m_connection;
+	ENetAddress           m_address;
+	ENetHost*             m_host;
+};
+
 class ConnectionSendThread : public JThread {
 
 public:
 	friend class UDPPeer;
+	friend class ConnectionEnetThread;
 
 	ConnectionSendThread(unsigned int max_packet_size, float timeout);
 
@@ -1015,6 +1091,7 @@ class Connection
 public:
 	friend class ConnectionSendThread;
 	friend class ConnectionReceiveThread;
+	friend class ConnectionEnetThread;
 
 	Connection(u32 protocol_id, u32 max_packet_size, float timeout, bool ipv6);
 	Connection(u32 protocol_id, u32 max_packet_size, float timeout, bool ipv6,
@@ -1048,7 +1125,9 @@ protected:
 	u16   lookupPeer(Address& sender);
 
 	u16 createPeer(Address& sender, MTProtocols protocol, int fd);
+	u16 createPeer(Address& sender, ENetPeer* peer);
 	UDPPeer*  createServerPeer(Address& sender);
+	EnetPeer* createServerPeer(Address& address, ENetPeer* peer);
 	bool deletePeer(u16 peer_id, bool timeout);
 
 	void SetPeerID(u16 id){ m_peer_id = id; }
@@ -1062,6 +1141,7 @@ protected:
 
 	UDPSocket m_udpSocket;
 	MutexedQueue<ConnectionCommand> m_command_queue;
+	MutexedQueue<ConnectionCommand> m_enet_command_queue;
 
 	void putEvent(ConnectionEvent &e);
 
@@ -1080,6 +1160,7 @@ private:
 
 	ConnectionSendThread m_sendThread;
 	ConnectionReceiveThread m_receiveThread;
+	ConnectionEnetThread m_enetThread;
 
 	JMutex m_info_mutex;
 

@@ -68,7 +68,10 @@ static inline float CALC_DTIME(unsigned int lasttime, unsigned int curtime) {
  /* starting value for window size */
 #define MIN_RELIABLE_WINDOW_SIZE 0x40
 
-#define MAX_UDP_PEERS 65535
+#define MAX_UDP_PEERS 16384
+#define MAX_ENET_PEERS 32768
+
+#define MIN_ENET_PEERS (MAX_UDP_PEERS+1)
 
 #define PING_TIMEOUT 5.0
 
@@ -1232,9 +1235,249 @@ SharedBuffer<u8> UDPPeer::addSpiltPacket(u8 channel,
 	return channels[channel].incoming_splits.insert(toadd,reliable);
 }
 
+EnetPeer::~EnetPeer()
+{
+//TODO cleanup
+}
+
 /******************************************************************************/
 /* Connection Threads                                                         */
 /******************************************************************************/
+
+ConnectionEnetThread::ConnectionEnetThread(Connection* parent) :
+	m_connection(parent),
+	m_host(0)
+{
+	int enet_retval = enet_initialize ();
+
+	assert( enet_retval == 0);
+}
+
+void * ConnectionEnetThread::Thread()
+{
+	ThreadStarted();
+	log_register_thread("ConnectionEnet");
+
+	LOG(dout_con<<m_connection->getDesc()
+			<<"ConnectionEnet thread started"<<std::endl);
+
+	//u32 curtime = porting::getTimeMs();
+	//u32 lasttime = curtime;
+
+	PROFILE(std::stringstream ThreadIdentifier);
+	PROFILE(ThreadIdentifier << "ConnectionEnet: [" << m_connection->getDesc() << "]");
+
+	while(!StopRequested())
+	{
+		//lasttime = curtime;
+		//curtime = porting::getTimeMs();
+		//float dtime = CALC_DTIME(lasttime,curtime);
+
+		/* translate commands to packets */
+		ConnectionCommand c = m_connection->m_enet_command_queue.pop_frontNoEx(0);
+		while(c.type != CONNCMD_NONE){
+			processCommand(c);
+			c = m_connection->m_enet_command_queue.pop_frontNoEx(0);
+		}
+
+		if (m_host != 0) {
+			ENetEvent event;
+			if (enet_host_service (m_host, &event, 50) > 0)
+			{
+				Address dummy;
+				u16 peer_id = PEER_ID_INEXISTENT;
+				switch (event.type)
+				{
+				case ENET_EVENT_TYPE_CONNECT:
+
+					if (getPeerID(event.peer) == PEER_ID_INEXISTENT) {
+						dummy = Address(event.peer->address.host,event.peer->address.port);
+						m_connection->createPeer(dummy,event.peer);
+					}
+					break;
+
+				case ENET_EVENT_TYPE_RECEIVE:
+					peer_id = getPeerID(event.peer);
+
+					if (peer_id != PEER_ID_INEXISTENT)
+					{
+						SharedBuffer<u8> got(event.packet->dataLength);
+						memcpy(*got,event.packet->data,event.packet->dataLength);
+						enet_packet_destroy (event.packet);
+						ConnectionEvent e;
+						e.dataReceived(peer_id, got);
+						m_connection->putEvent(e);
+
+						PeerHelper peer = m_connection->getPeerNoEx(peer_id);
+
+						if (!(!peer) &&
+							(dynamic_cast<EnetPeer*>(&peer) != 0))
+						{
+							dynamic_cast<EnetPeer*>(&peer)->reportRTT();
+						}
+
+					}
+					else {
+						fprintf(stderr,"ENET got data for non existent peer\n");
+					}
+					break;
+
+				case ENET_EVENT_TYPE_DISCONNECT:
+					peer_id = getPeerID(event.peer);
+
+					m_connection->deletePeer(peer_id,false);
+					break;
+
+				case ENET_EVENT_TYPE_NONE:
+
+					break;
+				}
+			}
+		}
+		else {
+			sleep_ms(50);
+		}
+	}
+
+	return NULL;
+}
+
+u16 ConnectionEnetThread::getPeerID(ENetPeer* peer_)
+{
+	std::list<u16> peer_ids = m_connection->getPeerIDs();
+
+	for (std::list<u16>::iterator i = peer_ids.begin(); i != peer_ids.end(); i++)
+	{
+		PeerHelper peer = m_connection->getPeerNoEx(*i);
+
+		if (!peer)
+			continue;
+
+		if (dynamic_cast<EnetPeer*>(&peer) == 0)
+			continue;
+
+		if (dynamic_cast<EnetPeer*>(&peer)->m_peer == peer_)
+			return dynamic_cast<EnetPeer*>(&peer)->id;
+	}
+
+	return PEER_ID_INEXISTENT;
+}
+
+void ConnectionEnetThread::sendCmd(ConnectionCommand& c)
+{
+	PeerHelper peer = m_connection->getPeerNoEx(c.peer_id);
+
+	if (!peer)
+		return;
+
+	if (dynamic_cast<EnetPeer*>(&peer) == 0)
+		return;
+
+	ENetPacket* tosend = enet_packet_create(*c.data,
+											c.data.getSize(),
+											c.reliable ?
+												ENET_PACKET_FLAG_RELIABLE : ENET_PACKET_FLAG_UNSEQUENCED);
+
+	if (enet_peer_send(dynamic_cast<EnetPeer*>(&peer)->m_peer,c.channelnum,tosend) != 0) {
+		if (c.reliable) {
+			assert("ENET failed to send data!" == 0);
+		}
+	}
+}
+
+void ConnectionEnetThread::sendToAll(ConnectionCommand& c)
+{
+	ENetPacket* tosend = enet_packet_create(*c.data,
+											c.data.getSize(),
+											c.reliable ?
+												ENET_PACKET_FLAG_RELIABLE : 0);
+
+	enet_host_broadcast(m_host,c.channelnum,tosend);
+}
+
+void ConnectionEnetThread::connect(ConnectionCommand& c)
+{
+	errorstream << "connection to: " << m_address.host << " port: " << m_address.port << std::endl;
+	m_host = enet_host_create(NULL,1,3,0,0);
+	if (m_host == 0)
+	{
+		LOG(derr_con<<m_connection->getDesc()<<" Failed to create enet client: "<<std::endl);
+		return;
+	}
+
+	enet_address_set_host(&m_address,c.address.serializeString().c_str());
+	m_address.port = c.address.getPort() +1;
+	ENetPeer* peer = enet_host_connect(m_host, &m_address, 3, 0);
+
+	if (peer == 0)
+	{
+		LOG(derr_con<<m_connection->getDesc()<<" Failed to initiate connection to enet server "<<std::endl);
+	}
+	m_connection->createServerPeer(c.address, peer);
+	// own peer id is irrelevant for enet
+	// but has to be different from server and inexistent
+	m_connection->SetPeerID(MAX_UDP_PEERS+1);
+}
+
+void ConnectionEnetThread::disconnect(u16 peer_id)
+{
+	PeerHelper peer = m_connection->getPeerNoEx(peer_id);
+
+	if (!peer)
+		return;
+
+	if (dynamic_cast<EnetPeer*>(&peer) == 0)
+		return;
+
+	enet_peer_disconnect(dynamic_cast<EnetPeer*>(&peer)->m_peer,0);
+}
+
+void ConnectionEnetThread::processCommand(ConnectionCommand& c)
+{
+	switch(c.type){
+	case CONNCMD_NONE:
+		LOG(dout_con<<m_connection->getDesc()<<"Enet processing CONNCMD_NONE"<<std::endl);
+		return;
+
+	case CONNCMD_SEND:
+		LOG(dout_con<<m_connection->getDesc()<<"Enet processing CONNCMD_SEND"<<std::endl);
+		sendCmd(c);
+		return;
+
+	case CONNCMD_SEND_TO_ALL:
+		LOG(dout_con<<m_connection->getDesc()<<"Enet processing CONNCMD_SEND_TO_ALL"<<std::endl);
+		sendToAll(c);
+		return;
+
+	case CONCMD_CREATE_PEER:
+		LOG(dout_con<<m_connection->getDesc()<<"Enet processing  CONCMD_CREATE_PEER"<<std::endl);
+		return;
+
+	case CONNCMD_SERVE:
+		m_address.host = ENET_HOST_ANY;
+		m_address.port = c.address.getPort() +1;
+		m_host = enet_host_create (&m_address, 128 /* TODO read from settings */,3,0,0);
+		if (m_host == 0)
+		{
+			LOG(derr_con<<m_connection->getDesc()<<" Failed to create enet server: "<<std::endl);
+		}
+		m_connection->SetPeerID(PEER_ID_SERVER);
+		return;
+	case CONNCMD_CONNECT:
+		connect(c);
+		return;
+
+	case CONNCMD_DISCONNECT:
+		//TODO
+		return;
+
+	case CONCMD_DISABLE_LEGACY:
+	case CONCMD_ACK:
+		assert("Got command that shouldn't be sent through enet command" == 0);
+	default:
+		LOG(dout_con<<m_connection->getDesc()<<" Invalid enet command type: " << c.type <<std::endl);
+	}
+}
 
 ConnectionSendThread::ConnectionSendThread( unsigned int max_packet_size,
 											float timeout) :
@@ -2660,6 +2903,7 @@ Connection::Connection(u32 protocol_id, u32 max_packet_size, float timeout,
 	m_protocol_id(protocol_id),
 	m_sendThread(max_packet_size, timeout),
 	m_receiveThread(max_packet_size),
+	m_enetThread(this),
 	m_info_mutex(),
 	m_bc_peerhandler(0),
 	m_bc_receive_timeout(0),
@@ -2673,6 +2917,7 @@ Connection::Connection(u32 protocol_id, u32 max_packet_size, float timeout,
 
 	m_sendThread.Start();
 	m_receiveThread.Start();
+	m_enetThread.Start();
 }
 
 Connection::Connection(u32 protocol_id, u32 max_packet_size, float timeout,
@@ -2684,6 +2929,7 @@ Connection::Connection(u32 protocol_id, u32 max_packet_size, float timeout,
 	m_protocol_id(protocol_id),
 	m_sendThread(max_packet_size, timeout),
 	m_receiveThread(max_packet_size),
+	m_enetThread(this),
 	m_info_mutex(),
 	m_bc_peerhandler(peerhandler),
 	m_bc_receive_timeout(0),
@@ -2698,6 +2944,7 @@ Connection::Connection(u32 protocol_id, u32 max_packet_size, float timeout,
 
 	m_sendThread.Start();
 	m_receiveThread.Start();
+	m_enetThread.Start();
 
 }
 
@@ -2849,12 +3096,70 @@ ConnectionEvent Connection::waitEvent(u32 timeout_ms)
 	}
 }
 
+#define IS_RUDP(peer_id) ((peer_id >1) && (peer_id <= MAX_UDP_PEERS))
+#define IS_ENET(peer_id) ((peer_id > MAX_UDP_PEERS) && (peer_id <= MAX_ENET_PEERS))
+
 void Connection::putCommand(ConnectionCommand &c)
 {
 	if (!m_shutting_down)
 	{
-		m_command_queue.push_back(c);
-		m_sendThread.Trigger();
+		if (c.type == CONNCMD_SEND_TO_ALL) {
+			m_command_queue.push_back(c);
+			m_sendThread.Trigger();
+			m_enet_command_queue.push_back(c);
+			return;
+		}
+
+		if (IS_RUDP(c.peer_id)) {
+			m_command_queue.push_back(c);
+			return;
+		}
+
+		if (IS_ENET(c.peer_id)) {
+			m_enet_command_queue.push_back(c);
+			return;
+		}
+		if (c.peer_id == PEER_ID_INEXISTENT)
+		{
+			if (c.type == CONNCMD_SERVE)
+			{
+				//TODO make server support configurable
+				m_command_queue.push_back(c);
+				m_enet_command_queue.push_back(c);
+				return;
+			}
+
+			if (c.type == CONNCMD_CONNECT)
+			{
+				std::string client_protocol = g_settings->get("client_protocol");
+
+				if (client_protocol == "legacy") {
+					errorstream << "Connecting to server using legacy protocol" << std::endl;
+					m_command_queue.push_back(c);
+				}
+				else if (client_protocol == "enet")
+				{
+					m_enet_command_queue.push_back(c);
+				}
+				return;
+			}
+		}
+
+		if ((c.peer_id == PEER_ID_SERVER) || (c.type == CONNCMD_DISCONNECT))
+		{
+			std::string client_protocol = g_settings->get("client_protocol");
+
+			if (client_protocol == "legacy") {
+				m_command_queue.push_back(c);
+				m_sendThread.Trigger();
+			}
+			else if (client_protocol == "enet")
+			{
+				m_enet_command_queue.push_back(c);
+			}
+			return;
+		}
+		assert("Command not asigned to any protocol!" == 0);
 	}
 }
 
@@ -3002,6 +3307,55 @@ float Connection::getLocalStat(rate_stat_type type)
 	return retval;
 }
 
+u16 Connection::createPeer(Address& sender, ENetPeer* peer_)
+{
+	// Somebody wants to make a new connection
+
+	// Get a unique peer id (2 or higher)
+	u16 peer_id_new = MAX_UDP_PEERS+1;
+	u16 overflow =  MAX_ENET_PEERS;
+
+	/*
+		Find an unused peer id
+	*/
+	bool out_of_ids = false;
+	for(;;)
+	{
+		// Check if exists
+		if(m_peers.find(peer_id_new) == m_peers.end())
+			break;
+		// Check for overflow
+		if(peer_id_new == overflow){
+			out_of_ids = true;
+			break;
+		}
+		peer_id_new++;
+	}
+	if(out_of_ids){
+		errorstream<<getDesc()<<" ran out of peer ids"<<std::endl;
+		return PEER_ID_INEXISTENT;
+	}
+
+	LOG(dout_con<<getDesc()
+			<<"createPeer(): giving peer_id="<<peer_id_new<<std::endl);
+
+	// Create a peer
+	Peer *peer = 0;
+	peer = new EnetPeer(peer_id_new, sender, this, peer_);
+
+	m_peers_mutex.Lock();
+	m_peers[peer->id] = peer;
+	m_peers_mutex.Unlock();
+
+	// Create peer addition event
+	ConnectionEvent e;
+	e.peerAdded(peer_id_new, sender);
+	putEvent(e);
+
+	// We're now talking to a valid peer_id
+	return peer_id_new;
+}
+
 u16 Connection::createPeer(Address& sender, MTProtocols protocol, int fd)
 {
 	// Somebody wants to make a new connection
@@ -3115,6 +3469,23 @@ UDPPeer* Connection::createServerPeer(Address& address)
 	}
 
 	UDPPeer *peer = new UDPPeer(PEER_ID_SERVER, address, this);
+
+	{
+		JMutexAutoLock lock(m_peers_mutex);
+		m_peers[peer->id] = peer;
+	}
+
+	return peer;
+}
+
+EnetPeer* Connection::createServerPeer(Address& address,ENetPeer* peer_)
+{
+	if (getPeerNoEx(PEER_ID_SERVER) != 0)
+	{
+		throw ConnectionException("Already connected to a server");
+	}
+
+	EnetPeer *peer = new EnetPeer(PEER_ID_SERVER, address, this, peer_);
 
 	{
 		JMutexAutoLock lock(m_peers_mutex);

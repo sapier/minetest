@@ -681,6 +681,25 @@ float getDisplayDensity()
 	return cached_display_density;
 }
 
+#elif defined(_WIN32)
+/* NOTE: this is based on windows font dpi setting not the actual screen dpi,
+ *  which doesn't seem to be available for anything below 8.1. Not sure if it's
+ *  correct there. */
+float getDisplayDensity()
+{
+	/* make minetest dpi aware */
+	SetProcessDPIAware();
+
+	HDC screen = GetDC(NULL);
+
+	double dpi_height = GetDeviceCaps(screen, LOGPIXELSX);
+	double dpi_width = GetDeviceCaps(screen, LOGPIXELSY);
+
+	/* cleanup */
+	ReleaseDC(NULL, screen);
+
+	return ((float) std::max(dpi_height,dpi_ width)) / 96.0;
+}
 
 #else
 float getDisplayDensity()

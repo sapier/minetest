@@ -33,13 +33,13 @@ typedef enum {
 
 /* analog to D3DXMatrixPerspectiveOffCenterLH, not glFrustum*/
 void getProjectionFrustum(
-        const float left,
-        const float right,
-        const float bottom,
-        const float top,
-        const float cnear,
-        const float cfar,
-        irr::core::matrix4& matrix)
+		const float left,
+		const float right,
+		const float bottom,
+		const float top,
+		const float cnear,
+		const float cfar,
+		irr::core::matrix4& matrix)
 {
 	matrix[0] = 2.0f * cnear / (right - left);
 	matrix[1] = 0.0f;
@@ -63,15 +63,14 @@ void getProjectionFrustum(
 }
 
 void calculate_3d_matrices(
-        paralax_sign psign,
-        Camera& camera,
-        const float halfInterocularDistance,
-        const float convergenceDistance,
-        irr::core::matrix4& projectionMatrix,
-        v3f& eyePosition,
-        v3f& target,
-        irr::core::matrix4& movement
-        )
+		paralax_sign psign,
+		Camera& camera,
+		const float halfInterocularDistance,
+		const float convergenceDistance,
+		irr::core::matrix4& projectionMatrix,
+		v3f& eyePosition,
+		v3f& target,
+		irr::core::matrix4& movement)
 {
 	scene::ICameraSceneNode* cameraNode = camera.getCameraNode();
 	irr::core::matrix4 startMatrix = cameraNode->getAbsoluteTransformation();
@@ -116,14 +115,15 @@ void draw_anaglyph_3d_mode(Camera& camera, bool show_hud, Hud& hud,
 	v3f eyePosition, target;
 
 	//Left eye...
-	calculate_3d_matrices(LEFT,
-	                      camera,
-	                      halfInterocularDistance,
-	                      convergenceDistance,
-	                      projectionMatrix,
-	                      eyePosition,
-	                      target,
-	                      movement);
+	calculate_3d_matrices(
+		LEFT,
+		camera,
+		halfInterocularDistance,
+		convergenceDistance,
+		projectionMatrix,
+		eyePosition,
+		target,
+		movement);
 
 	//clear the depth buffer, and color
 	driver->beginScene( true, true, irr::video::SColor(0, 200, 200, 255));
@@ -146,14 +146,15 @@ void draw_anaglyph_3d_mode(Camera& camera, bool show_hud, Hud& hud,
 	guienv->drawAll();
 
 	//Right eye...
-	calculate_3d_matrices(RIGHT,
-	                      camera,
-	                      halfInterocularDistance,
-	                      convergenceDistance,
-	                      projectionMatrix,
-	                      eyePosition,
-	                      target,
-	                      movement);
+	calculate_3d_matrices(
+		RIGHT,
+		camera,
+		halfInterocularDistance,
+		convergenceDistance,
+		projectionMatrix,
+		eyePosition,
+		target,
+		movement);
 
 	//clear the depth buffer
 	driver->clearZBuffer();
